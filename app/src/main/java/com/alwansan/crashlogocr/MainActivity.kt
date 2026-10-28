@@ -145,7 +145,6 @@ class MainActivity : AppCompatActivity() {
         )
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.ocr_language_settings)
-            .setMessage(R.string.language_description)
             .setSingleChoiceItems(names, OcrLanguagePreferences.get(this).ordinal) { dialog, selected ->
                 OcrLanguagePreferences.set(this, languages[selected])
                 dialog.dismiss()
