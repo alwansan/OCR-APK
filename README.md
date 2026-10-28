@@ -8,12 +8,12 @@ CrashLogOCR is a tiny Android utility that extracts **Java / Android crash logs 
 
 Screenshots of crash dialogs (including Arabic/RTL Android skins) often wrap English package names, stack frames and file paths across multiple lines. Standard image-to-text apps copy all the UI clutter too. CrashLogOCR focuses on developer logs such as:
 
-\`\`\`text
+```text
 java.lang.NoClassDefFoundError: Failed resolution of: Lcom/shabakaty/downloader/j32;
     at com.shabakaty.cinemana.CinemanaApplication.attachBaseContext(CinemanaApplication.kt:2)
 Caused by: java.lang.ClassNotFoundException: com.shabakaty.downloader.j32
     ... 15 more
-\`\`\`
+```
 
 ## Features
 
@@ -28,10 +28,10 @@ Caused by: java.lang.ClassNotFoundException: com.shabakaty.downloader.j32
 
 1. Go to **[GitHub Actions](https://github.com/alwansan/OCR-APK/actions/workflows/build-apk.yml)**.
 2. Open the most recent **Build Android APK** run, wait for a green checkmark.
-3. Download **CrashLogOCR-debug-apk** under **Artifacts**, unzip, and install \`app-debug.apk\`.
+3. Download **CrashLogOCR-debug-apk** under **Artifacts**, unzip, and install `app-debug.apk`.
 4. Or open the repository in Android Studio (AGP 8.9.2 / Gradle 8.11.1 / JDK 17 / SDK 35).
 
-CI uses a pinned Gradle distribution through \`gradle/actions/setup-gradle\`; a Gradle wrapper JAR is not included.
+CI uses a pinned Gradle distribution through `gradle/actions/setup-gradle`; a Gradle wrapper JAR is not included.
 
 ## Limitations and safety
 
@@ -39,12 +39,12 @@ OCR is probabilistic: dots, case, slash/semicolon and class names may be wrong. 
 
 ## Project layout
 
-- \`app/src/main/java/.../OcrEngine.kt\` — bundled ML Kit recognizer
-- \`TraceCleaner.kt\` — deterministic stacktrace heuristics (no generative guesses)
-- \`ShareActivity.kt\` — transparent Android share target
-- \`MainActivity.kt\` — select / paste / review / edit / copy
-- \`TraceCleanerTest.kt\` — regression samples
-- \`.github/workflows/build-apk.yml\` — tests and APK artifact
+- `app/src/main/java/.../OcrEngine.kt` — bundled ML Kit recognizer
+- `TraceCleaner.kt` — deterministic stacktrace heuristics (no generative guesses)
+- `ShareActivity.kt` — transparent Android share target
+- `MainActivity.kt` — select / paste / review / edit / copy
+- `TraceCleanerTest.kt` — regression samples
+- `.github/workflows/build-apk.yml` — tests and APK artifact
 
 ## العربية
 
@@ -56,7 +56,7 @@ OCR is probabilistic: dots, case, slash/semicolon and class names may be wrong. 
 
 يعمل التعرف على النص محلياً حتى دون إنترنت، ولا يحتاج صلاحية الصور أو الإنترنت. لا توجد مزامنة أو سجل محفوظ. **تحقق من أسماء الكلاسات والأسطر دائماً** لأن أخطاء OCR قد تغيّر حرفاً مؤثراً في التشخيص.
 
-**تنزيل APK:** افتح [Actions](https://github.com/alwansan/OCR-APK/actions/workflows/build-apk.yml)، اختر تشغيل البناء الناجح، ثم نزّل الملف \`CrashLogOCR-debug-apk\` من Artifacts وفك الضغط وثبّته.
+**تنزيل APK:** افتح [Actions](https://github.com/alwansan/OCR-APK/actions/workflows/build-apk.yml)، اختر تشغيل البناء الناجح، ثم نزّل الملف `CrashLogOCR-debug-apk` من Artifacts وفك الضغط وثبّته.
 
 ## Credits / sources
 
