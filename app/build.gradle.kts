@@ -1,3 +1,7 @@
+import java.io.File
+import java.net.URL
+import java.util.Base64
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -8,7 +12,7 @@ val sharedTestKey = file("signing/community-debug.jks")
 if (!sharedTestKey.isFile) {
     sharedTestKey.parentFile.mkdirs()
     sharedTestKey.writeBytes(
-        java.util.Base64.getDecoder().decode(
+        Base64.getDecoder().decode(
             file("signing/community-debug.jks.base64").readText().trim()
         )
     )
@@ -80,10 +84,10 @@ val prepareOcrModels = tasks.register("prepareOcrModels") {
         val dir = trainedData.asFile
         check(dir.isDirectory || dir.mkdirs())
         for (code in codes) {
-            val destination = java.io.File(dir, "${code}.traineddata")
+            val destination = File(dir, "${code}.traineddata")
             if (destination.length() >= 100_000L) continue
-            val staging = java.io.File(dir, "$"+"{code}.part")
-            val url = java.net.URL("https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/$"+"{code}.traineddata")
+            val staging = File(dir, "$"+"{code}.part")
+            val url = URL("https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/$"+"{code}.traineddata")
             try {
                 val connection = url.openConnection().apply {
                     connectTimeout = 20_000
