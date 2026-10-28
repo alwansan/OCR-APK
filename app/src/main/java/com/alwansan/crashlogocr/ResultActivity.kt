@@ -93,7 +93,7 @@ class ResultActivity : AppCompatActivity() {
         findViewById<MaterialButton>(R.id.shareBtn).setOnClickListener { share(current()) }
         findViewById<MaterialButton>(R.id.reclean).setOnClickListener {
             raw = if (mode == Mode.RAW) editor.text.toString() else raw
-            clean = TraceCleaner.clean(raw)
+            clean = OcrTailGuard.stripClearlySpuriousSuffix(TraceCleaner.clean(raw))
             toggle.check(R.id.modeClean); mode = Mode.CLEAN
             render(); summarize()
         }
