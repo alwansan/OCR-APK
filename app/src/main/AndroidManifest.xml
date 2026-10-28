@@ -25,6 +25,7 @@
         </activity>
 
         <activity android:name=".GalleryActivity" android:exported="false"/>
+        <activity android:name=".ImageTextActivity" android:exported="false" android:windowSoftInputMode="stateAlwaysHidden|adjustNothing"/>
         <activity android:name=".ResultActivity" android:exported="false"
             android:windowSoftInputMode="adjustResize"/>
 
