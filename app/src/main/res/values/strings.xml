@@ -115,4 +115,14 @@ Pull down to refresh.</string>
     <string name="ocr_accuracy_balanced">Balanced — check suspect code lines (default)</string>
     <string name="ocr_accuracy_high">High accuracy — check more lines (slower)</string>
     <string name="selected_line_count">%1$d lines selected</string>
+    <string name="engine_lab_title">OCR Engine Lab</string>
+    <string name="engine_lab_help">Compare the same original image using ML Kit and Tesseract, entirely offline. Line agreement is NOT an accuracy score without a reference transcript. PaddleOCR will be tested separately.</string>
+    <string name="engine_lab_pick">Choose one image to compare</string>
+    <string name="engine_lab_idle">Pick an original screenshot to begin.</string>
+    <string name="engine_lab_working">Recognizing with both engines…</string>
+    <string name="engine_lab_finished">Both recognition attempts finished</string>
+    <string name="engine_lab_comparison">Identical lines: %1$d · Only ML Kit: %2$d · Only Tesseract: %3$d</string>
+    <string name="engine_lab_partial">One engine could not read the image. See results below.</string>
+    <string name="engine_lab_empty">No recognized text</string>
+    <string name="engine_lab_copy">Copy result</string>
 </resources>
