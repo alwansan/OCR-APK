@@ -110,4 +110,8 @@
     <string name="word_selection_mode">الكلمات</string>
     <string name="line_selection_mode">الأسطر كاملة</string>
     <string name="line_selection_help">حدد السطر كاملاً إذا كانت بعض مربعات الكلمات ناقصة</string>
+    <string name="ocr_accuracy_menu">دقة التعرف وسرعته</string>
+    <string name="ocr_accuracy_fast">سريع — ML Kit فقط</string>
+    <string name="ocr_accuracy_balanced">متوازن — مراجعة أسطر الكود المشكوك بها (افتراضي)</string>
+    <string name="ocr_accuracy_high">دقة عالية — مراجعة أسطر أكثر (أبطأ)</string>
 </resources>
