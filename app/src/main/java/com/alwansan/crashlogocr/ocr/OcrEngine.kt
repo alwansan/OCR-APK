@@ -58,6 +58,8 @@ object OcrEngine {
 
     private fun recognizeLatin(context: Context, uris: List<Uri>): OcrOutput {
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+        val lineChecker = OcrTessLineCheck(context)
+        val accuracy = OcrAccuracyPreference.get(context)
         try {
             val lines = mutableListOf<OcrLine>()
             val words = mutableListOf<OcrWord>()
@@ -86,8 +88,13 @@ object OcrEngine {
                             enhanced.recycle()
                         }
                     } else initial
+                    // A different OCR engine is only consulted for a capped number
+                    // of suspicious Java frames. It cannot silently rewrite every line.
+                    val verified = lineChecker.refine(
+                        tile.bitmap, merged, dark, accuracy.maxVerifyPerTile
+                    )
 
-                    for (line in merged) {
+                    for (line in verified) {
                         val middle = tile.top + (line.top + line.bottom) / 2
                         if (middle < tile.ownLo || middle >= tile.ownHi) continue
                         lines += OcrLine(
@@ -145,6 +152,7 @@ object OcrEngine {
             }
             return OcrOutput(lines.sortedWith(compareBy({ it.top }, { it.left })), imageWidth, words)
         } finally {
+            lineChecker.close()
             recognizer.close()
         }
     }
