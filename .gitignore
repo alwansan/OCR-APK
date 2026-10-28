@@ -14,3 +14,6 @@ captures/
 keystore/
 dist/
 *.zip
+
+# Public test key is in Base64; Gradle decodes its binary locally.
+app/signing/*.jks
