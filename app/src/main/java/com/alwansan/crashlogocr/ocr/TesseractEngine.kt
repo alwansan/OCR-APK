@@ -17,7 +17,7 @@ internal object TesseractEngine {
     private val wordSpan = Regex("""<span\b(?=[^>]*\bocrx_word\b)[^>]*>.*?</span>""",
         setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
     private val bbox = Regex("""\bbbox\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)""")
-    private val wordConfidence = Regex("""\\bx_wconf\\s+(\\d+)""")
+    private val wordConfidence = Regex("""\bx_wconf\s+(\d+)""")
     private val content = Regex(""">([^<>]*)</span>""", RegexOption.DOT_MATCHES_ALL)
 
     @Suppress("DEPRECATION")
