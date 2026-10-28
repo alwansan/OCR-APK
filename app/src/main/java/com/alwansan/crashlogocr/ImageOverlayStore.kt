@@ -2,6 +2,7 @@ package com.alwansan.crashlogocr
 
 import android.content.Context
 import android.net.Uri
+import androidx.exifinterface.media.ExifInterface
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -23,6 +24,7 @@ object ImageOverlayStore {
         if (!folder.exists() && !folder.mkdirs()) return
         var total = 0L
         val writtenPages = mutableListOf<Int>()
+        val orientations = mutableMapOf<Int, Int>()
         for ((index, uri) in sources.take(12).withIndex()) {
             val file = File(folder, "page_$index.img")
             try {
@@ -43,6 +45,10 @@ object ImageOverlayStore {
                     }
                 } ?: error("Unable to open image")
                 writtenPages += index
+                orientations[index] = runCatching {
+                    ExifInterface(file.absolutePath).getAttributeInt(
+                        ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+                }.getOrDefault(ExifInterface.ORIENTATION_NORMAL)
             } catch (_: Exception) {
                 file.delete()
             }
@@ -53,7 +59,8 @@ object ImageOverlayStore {
         }
         val root = JSONArray()
         words.asSequence().filter { it.valid && it.imageIndex in writtenPages }
-            .take(MAX_WORDS).forEach { w ->
+            .take(MAX_WORDS).forEach { original ->
+                val w = mapToRawImage(original, orientations[original.imageIndex])
                 root.put(JSONObject()
                     .put("page", w.imageIndex)
                     .put("text", w.text)
@@ -68,6 +75,26 @@ object ImageOverlayStore {
             dst.delete()
             tmp.renameTo(dst)
         }
+    }
+
+    /**
+     * The region viewer shows encoded/raw pixels, whereas ImageTiler rotates OCR
+     * pixels when EXIF says 90/180/270. Invert the rotation once at persistence time.
+     */
+    private fun mapToRawImage(w: OcrWord, orientation: Int?): OcrWord = when (orientation) {
+        ExifInterface.ORIENTATION_ROTATE_90 -> w.copy(
+            left = w.top, top = 1f - w.right,
+            right = w.bottom, bottom = 1f - w.left
+        )
+        ExifInterface.ORIENTATION_ROTATE_180 -> w.copy(
+            left = 1f - w.right, top = 1f - w.bottom,
+            right = 1f - w.left, bottom = 1f - w.top
+        )
+        ExifInterface.ORIENTATION_ROTATE_270 -> w.copy(
+            left = 1f - w.bottom, top = w.left,
+            right = 1f - w.top, bottom = w.right
+        )
+        else -> w
     }
 
     fun pages(context: Context, id: Long): List<ImagePage> {
