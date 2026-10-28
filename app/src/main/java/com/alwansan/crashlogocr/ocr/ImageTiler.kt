@@ -35,16 +35,31 @@ object ImageTiler {
         val h = bounds.outHeight
         require(w > 0 && h > 0) { "Unreadable image" }
 
-        val sample = if (w > 2600) 2 else 1
-        val scale = if (w / sample < 900) 2f else 1f   // upscale small captures: ML Kit wants ~16px glyphs
+        // Keep original pixels for common screenshots: downsampling can erase dots
+        // in filenames, Java class names and punctuation.
+        val sample = if (w > 3200) 2 else 1
+        val effectiveWidth = w / sample
+        val scale = when {
+            effectiveWidth < 380 -> 3f
+            effectiveWidth < 650 -> 2.5f
+            effectiveWidth < 900 -> 2f
+            else -> 1f
+        }
+        // Cap EACH processed tile to roughly 4MP. This keeps upscaling a
+        // narrow, tall screenshot safe on devices with limited free RAM.
+        val tileHeight = minOf(
+            TILE,
+            maxOf(650, (4_000_000f / (effectiveWidth * scale * scale)).toInt())
+        )
 
         return if (orientation == ExifInterface.ORIENTATION_NORMAL || orientation == ExifInterface.ORIENTATION_UNDEFINED) {
             @Suppress("DEPRECATION")
             val decoder = resolver.openInputStream(uri)!!.use { BitmapRegionDecoder.newInstance(it, false) }
                 ?: error("Cannot open image")
             try {
-                val step = (TILE - OVERLAP) * sample
-                val srcTile = TILE * sample
+                val overlap = minOf(OVERLAP, tileHeight / 4)
+                val step = (tileHeight - overlap) * sample
+                val srcTile = tileHeight * sample
                 var y = 0
                 var prevHi = Int.MIN_VALUE
                 while (true) {
@@ -68,13 +83,13 @@ object ImageTiler {
             }
             (w / sample * scale).toInt()
         } else {
-            rotatedPath(context, uri, orientation, w, h, scale, onTile)
+            rotatedPath(context, uri, orientation, w, h, scale, tileHeight, onTile)
         }
     }
 
     private fun rotatedPath(
         context: Context, uri: Uri, orientation: Int, w: Int, h: Int, scale: Float,
-        onTile: (Tile) -> Unit
+        tileHeight: Int, onTile: (Tile) -> Unit
     ): Int {
         var sample = 1
         while (maxOf(w, h) / sample > MAX_FULL_DECODE) sample *= 2
@@ -92,11 +107,11 @@ object ImageTiler {
         if (full !== decoded) decoded.recycle()
         val fw = full.width
         val fh = full.height
-        val step = TILE - OVERLAP
+        val step = tileHeight - minOf(OVERLAP, tileHeight / 4)
         var y = 0
         var prevHi = Int.MIN_VALUE
         while (true) {
-            val bottom = minOf(y + TILE, fh)
+            val bottom = minOf(y + tileHeight, fh)
             val piece = Bitmap.createBitmap(full, 0, y, fw, bottom - y)
             val bmp = scaled(piece, scale)
             val outTop = (y * scale).toInt()
@@ -105,6 +120,7 @@ object ImageTiler {
             val hi = if (last) Int.MAX_VALUE else (nextTop + outTop + bmp.height) / 2
             onTile(Tile(bmp, outTop, prevHi, hi))
             if (bmp !== piece) piece.recycle()
+            bmp.recycle()
             prevHi = hi
             if (last) break
             y += step
