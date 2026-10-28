@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
+import android.graphics.PointF
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
@@ -37,6 +38,16 @@ class LiveTextImageView @JvmOverloads constructor(
         style = Paint.Style.STROKE
         strokeWidth = 2f * resources.displayMetrics.density
     }
+    private val cropBrush = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.rgb(255, 200, 46)
+        style = Paint.Style.STROKE
+        strokeWidth = 2f * resources.displayMetrics.density
+    }
+    private val uncertainPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.rgb(245, 179, 42)
+        alpha = 90
+    }
+    private val handlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(79, 148, 255) }
     private val viewport = Rect()
     private val cacheRect = Rect()
     private var decoder: BitmapRegionDecoder? = null
@@ -46,6 +57,11 @@ class LiveTextImageView @JvmOverloads constructor(
     private var imageHeight = 1
     private var words = emptyList<OcrWord>()
     private val selection = linkedSetOf<Int>()
+    private var showUncertain = true
+    private var cropMode = false
+    private var cropStart: PointF? = null
+    private var cropEnd: PointF? = null
+    private var adjustingHandle = false
     private var baseScale = 1f
     private var zoom = 1f
     private var shiftX = 0f
@@ -85,6 +101,9 @@ class LiveTextImageView @JvmOverloads constructor(
         imageHeight = decoder!!.height
         words = detected.filter { it.valid }
         selection.clear()
+        cropMode = false
+        cropStart = null
+        cropEnd = null
         post { resetView(); notifySelection() }
     }
 
@@ -102,6 +121,31 @@ class LiveTextImageView @JvmOverloads constructor(
     }
 
     fun selectionSize() = selection.size
+    fun hasConfidenceData() = words.any { it.confidence != null }
+    fun toggleUncertain(): Boolean {
+        showUncertain = !showUncertain
+        invalidate()
+        return showUncertain
+    }
+    fun setCropMode(enabled: Boolean) {
+        cropMode = enabled
+        cropStart = null
+        cropEnd = null
+        invalidate()
+    }
+    fun getCropRect(): Rect? {
+        val a = cropStart ?: return null
+        val b = cropEnd ?: return null
+        val l = min(a.x, b.x).toInt().coerceIn(0, imageWidth)
+        val t = min(a.y, b.y).toInt().coerceIn(0, imageHeight)
+        val r = max(a.x, b.x).toInt().coerceIn(0, imageWidth)
+        val bot = max(a.y, b.y).toInt().coerceIn(0, imageHeight)
+        return if (r - l >= 32 && bot - t >= 32) Rect(l, t, r, bot) else null
+    }
+    private fun toSource(x: Float, y: Float) = PointF(
+        ((x - shiftX) / zoom).coerceIn(0f, imageWidth.toFloat()),
+        ((y - shiftY) / zoom).coerceIn(0f, imageHeight.toFloat())
+    )
     fun wordCount() = words.size
 
     fun selectedText(): String {
@@ -200,32 +244,87 @@ class LiveTextImageView @JvmOverloads constructor(
             if (x2 < 0 || x1 > width || y2 < 0 || y1 > height) continue
             val box = RectF(x1 - 2f, y1 - 1f, x2 + 2f, y2 + 1f)
             marker.alpha = if (index in selection) 118 else 32
-            canvas.drawRoundRect(box, 3f, 3f, marker)
+            canvas.drawRoundRect(box, 3f, 3f,
+                if (showUncertain && w.confidence != null && w.confidence < 55 && index !in selection)
+                    uncertainPaint else marker)
             if (index in selection) canvas.drawRoundRect(box, 3f, 3f, outline)
         }
+        if (selection.isNotEmpty()) {
+            val indices = selection.sorted()
+            for ((first, last) in listOf(indices.first() to true, indices.last() to false)) {
+                val w = words[first]
+                val hx = (if (last) w.left else w.right) * imageWidth * zoom + shiftX
+                val hy = w.bottom * imageHeight * zoom + shiftY
+                canvas.drawCircle(hx, hy + 9f * resources.displayMetrics.density,
+                    6f * resources.displayMetrics.density, handlePaint)
+            }
+        }
+        val a = cropStart
+        val b = cropEnd
+        if (a != null && b != null) {
+            canvas.drawRect(RectF(
+                min(a.x, b.x) * zoom + shiftX, min(a.y, b.y) * zoom + shiftY,
+                max(a.x, b.x) * zoom + shiftX, max(a.y, b.y) * zoom + shiftY
+            ), cropBrush)
+        }
+    }
+
+    private fun handleAnchor(x: Float, y: Float): Int {
+        if (selection.size < 2) return -1
+        val indices = selection.sorted()
+        val radius = 22f * resources.displayMetrics.density
+        for ((handleIndex, anchoredIndex, leftSide) in listOf(
+            Triple(indices.first(), indices.last(), true),
+            Triple(indices.last(), indices.first(), false))) {
+            val w = words[handleIndex]
+            val hx = (if (leftSide) w.left else w.right) * imageWidth * zoom + shiftX
+            val hy = w.bottom * imageHeight * zoom + shiftY + 9f * resources.displayMetrics.density
+            if (abs(x - hx) < radius && abs(y - hy) < radius) return anchoredIndex
+        }
+        return -1
     }
 
     private fun wordAt(x: Float, y: Float): Int {
         if (zoom <= 0f) return -1
         val px = (x - shiftX) / (zoom * imageWidth)
         val py = (y - shiftY) / (zoom * imageHeight)
-        val near = 8f * resources.displayMetrics.density / zoom / max(imageWidth, imageHeight)
+        val nearX = 8f * resources.displayMetrics.density / zoom / imageWidth
+        val nearY = 8f * resources.displayMetrics.density / zoom / imageHeight
         return words.indexOfLast { w ->
-            px >= w.left - near && px <= w.right + near &&
-                py >= w.top - near && py <= w.bottom + near
+            px >= w.left - nearX && px <= w.right + nearX &&
+                py >= w.top - nearY && py <= w.bottom + nearY
         }
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (decoder == null) return false
+        if (cropMode) {
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    parent?.requestDisallowInterceptTouchEvent(true)
+                    cropStart = toSource(event.x, event.y)
+                    cropEnd = cropStart
+                }
+                MotionEvent.ACTION_MOVE, MotionEvent.ACTION_UP -> {
+                    if (event.pointerCount == 1) cropEnd = toSource(event.x, event.y)
+                    if (event.actionMasked == MotionEvent.ACTION_UP)
+                        parent?.requestDisallowInterceptTouchEvent(false)
+                }
+                MotionEvent.ACTION_CANCEL -> parent?.requestDisallowInterceptTouchEvent(false)
+            }
+            invalidate()
+            return true
+        }
         pinch.onTouchEvent(event)
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 parent?.requestDisallowInterceptTouchEvent(true)
                 downX = event.x
                 downY = event.y
-                downIndex = wordAt(event.x, event.y)
-                dragged = false
+                val anchor = handleAnchor(event.x, event.y)
+                adjustingHandle = anchor >= 0
+                downIndex = if (adjustingHandle) anchor else wordAt(event.x, event.y)
+                dragged = adjustingHandle
                 scaling = false
                 return true
             }
