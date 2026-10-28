@@ -35,8 +35,8 @@ object OcrEngine {
     private fun candidates(text: Text): List<OcrPassFusion.Line> {
         return text.textBlocks.flatMap { block -> block.lines }.mapNotNull { line ->
             val bounds = line.boundingBox ?: return@mapNotNull null
-            val elements = line.elements.mapNotNull { element ->
-                val b = element.boundingBox ?: return@mapNotNull null
+            val elements = line.elements.mapNotNull elementLoop@{ element ->
+                val b = element.boundingBox ?: return@elementLoop null
                 OcrPassFusion.Word(element.text, b.left, b.top, b.right, b.bottom)
             }
             OcrPassFusion.Line(line.text, bounds.left, bounds.top, bounds.right, bounds.bottom,
