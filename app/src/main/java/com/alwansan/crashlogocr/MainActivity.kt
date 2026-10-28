@@ -135,6 +135,7 @@ class MainActivity : AppCompatActivity() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.settings)
             .setMultiChoiceItems(labels, checked) { _, i, on -> if (i == 0) Prefs.setQuickCopy(this, on) }
+            .setNeutralButton(R.string.ui_language) { _, _ -> showUiLanguages() }
             .setPositiveButton(android.R.string.ok, null)
             .show()
     }
