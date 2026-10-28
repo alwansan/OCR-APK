@@ -10,8 +10,10 @@ object Prefs {
     private fun p(c: Context) = c.getSharedPreferences("settings", Context.MODE_PRIVATE)
     fun quickCopy(c: Context) = p(c).getBoolean("quick_copy", true)
     fun setQuickCopy(c: Context, v: Boolean) = p(c).edit().putBoolean("quick_copy", v).apply()
-    fun wrapLines(c: Context) = p(c).getBoolean("wrap", false)
+    fun wrapLines(c: Context) = p(c).getBoolean("wrap", true)
     fun setWrapLines(c: Context, v: Boolean) = p(c).edit().putBoolean("wrap", v).apply()
+    fun editEnabled(c: Context) = p(c).getBoolean("edit_enabled", true)
+    fun setEditEnabled(c: Context, v: Boolean) = p(c).edit().putBoolean("edit_enabled", v).apply()
 }
 
 object ClipboardUtils {
