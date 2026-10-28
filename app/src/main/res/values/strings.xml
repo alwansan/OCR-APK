@@ -89,4 +89,9 @@ Pull down to refresh.</string>
     <string name="next_page">Next</string>
     <string name="no_saved_image">No image saved for this result. Scan a screenshot again.</string>
     <string name="image_no_word_boxes">Image available, but no OCR word locations were detected.</string>
+    <string name="ui_language">App language</string>
+    <string name="ui_language_auto">Follow phone language</string>
+    <string name="ui_language_ar">العربية</string>
+    <string name="ui_language_en">English</string>
+    <string name="ui_language_desc">Changing this only changes the interface. OCR recognition languages can be chosen separately.</string>
 </resources>
