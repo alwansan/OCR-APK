@@ -234,6 +234,7 @@ class LiveTextImageView @JvmOverloads constructor(
         if (action == MotionEvent.ACTION_DOWN) {
             parent?.requestDisallowInterceptTouchEvent(true)
             scroller.forceFinished(true)
+            pinch.onTouchEvent(event)
             tracker?.recycle()
             tracker = VelocityTracker.obtain()
             startX = event.x; startY = event.y
