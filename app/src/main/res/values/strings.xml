@@ -94,4 +94,12 @@ Pull down to refresh.</string>
     <string name="ui_language_ar">العربية</string>
     <string name="ui_language_en">English</string>
     <string name="ui_language_desc">Changing this only changes the interface. OCR recognition languages can be chosen separately.</string>
+    <string name="search_selection">Search selected text</string>
+    <string name="crop_ocr">Crop / OCR</string>
+    <string name="run_crop_ocr">Recognize crop</string>
+    <string name="uncertain_words">Uncertain words</string>
+    <string name="crop_hint">Drag a rectangle around the area, then tap Recognize crop.</string>
+    <string name="crop_empty">Select a larger image area first.</string>
+    <string name="cropping">Preparing cropped image…</string>
+    <string name="search_unavailable">No app can open web search.</string>
 </resources>
