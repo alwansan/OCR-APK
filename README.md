@@ -63,3 +63,22 @@ The project now contains `app/signing/community-debug.jks.base64`, a shared publ
 للتعرف على العربية، افتح القائمة الرئيسية ← **لغات OCR والنماذج** واختر العربية أو العربية والإنجليزية. العربية تعتمد Tesseract ونموذجه `ara`، والإنجليزية البرمجية تستمر على ML Kit. ملفات اللغة موجودة مع التطبيق للعمل دون إنترنت، ويمكن تحديثها يدوياً من الإعدادات.
 
 **تنبيه:** مفتاح Debug المشترك منشور علناً حسب طلب صاحب المشروع. هذا مفيد لاستمرارية توقيع نسخ التجربة، لكنه لا يوفر حماية التحديثات ضد APK مزور بتوقيع نفس المفتاح.
+
+## v2.3 — Live OCR text selection on screenshots
+
+A new **original image** card appears at the top of OCR results for screenshots scanned in v2.3+. Open it to see the actual image with detected words highlighted directly on top, similar to Live Text or Google Lens.
+
+- **Tap a word** to select or deselect it. **Drag between words** to select an entire range.
+- **Pinch to zoom**, swipe the empty background to pan, or press **Fit** to reset.
+- **Select all**, **Clear**, **Copy selected** and **Share** do not invoke the keyboard.
+- Multiple scanned images have **Previous / Next** navigation with separate word geometry.
+- English uses ML Kit word-element boxes; Arabic / Arabic+English uses Tesseract hOCR word boxes.
+- Large screenshots are loaded using Android's **BitmapRegionDecoder**, not decoded as a single giant bitmap, to reduce the risk of out-of-memory crashes.
+- Images are stored only inside the app-private result history and deleted when their record is removed. The app saves up to 12 pages per result, at most 30 MiB each and 120 MiB combined. Prior v2.2 history is still readable as text only.
+- **No cloud OCR and no keyboard** in this image-selection screen.
+
+### العربية — عرض الصورة وتحديد الكلمات
+
+من صفحة النتيجة اضغط على مربع **«عرض النص على الصورة الأصلية»**. راح تنفتح الصورة كاملة وتظهر الكلمات المحددة تلقائياً. اضغط على أي كلمة أو اسحب على عدة كلمات حتى تحددها، وتكدر تستخدم **تحديد الكل / إلغاء التحديد / نسخ المحدد / مشاركة**. للتكبير استخدم إصبعين، وللتحريك اسحب على المساحة الخالية، وزر **ملاءمة** يرجع الصورة لحجمها المناسب. ماكو كيبورد نهائياً داخل هذا العارض.
+
+**ملاحظة:** الاستجابة الفعلية للصور الطولية جداً ودقة مواضع الكلمات تحتاج اختبار على أجهزة حقيقية؛ نجاح بناء GitHub Actions وحده لا يثبت أداء اللمس والـ OCR في كل الصور. راجع `docs/LIVE-TEXT-IMAGE.md`.
