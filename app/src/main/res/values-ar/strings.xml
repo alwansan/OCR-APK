@@ -102,4 +102,9 @@
     <string name="crop_empty">حدد مساحة أكبر من الصورة.</string>
     <string name="cropping">جارٍ تجهيز الجزء المحدد…</string>
     <string name="search_unavailable">ماكو تطبيق متاح للبحث بالويب.</string>
+    <string name="gesture_pan_mode">تحريك الصورة</string>
+    <string name="gesture_select_mode">تحديد نطاق</string>
+    <string name="gesture_pan_description">تحريك الصورة والتمرير بحرية</string>
+    <string name="gesture_select_description">اسحب من كلمة إلى أخرى لتحديد النص</string>
+    <string name="gesture_help">اسحب للتحريك • اضغط على الكلمة • اضغط مطولاً للتحديد • شريط سريع باليمين</string>
 </resources>
