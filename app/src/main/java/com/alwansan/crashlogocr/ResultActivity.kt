@@ -3,6 +3,10 @@ package com.alwansan.crashlogocr
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.view.inputmethod.InputMethodManager
+import android.content.Context
+import android.text.method.KeyListener
+import android.widget.ImageButton
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
@@ -19,6 +23,9 @@ class ResultActivity : AppCompatActivity() {
     private enum class Mode { CLEAN, COMPACT, RAW }
 
     private lateinit var editor: EditText
+    private lateinit var editEye: ImageButton
+    private var originalKeyListener: KeyListener? = null
+    private var editingAllowed = true
     private lateinit var headline: TextView
     private lateinit var cause: TextView
     private lateinit var chips: ChipGroup
@@ -42,6 +49,15 @@ class ResultActivity : AppCompatActivity() {
         toolbar.setNavigationOnClickListener { finish() }
 
         editor = findViewById(R.id.editor)
+        originalKeyListener = editor.keyListener
+        editingAllowed = Prefs.editEnabled(this)
+        editEye = findViewById(R.id.editEye)
+        editEye.setOnClickListener {
+            editingAllowed = !editingAllowed
+            Prefs.setEditEnabled(this, editingAllowed)
+            applyEditingMode()
+            toast(if (editingAllowed) R.string.editing_on_message else R.string.editing_off_message)
+        }
         headline = findViewById(R.id.headline)
         cause = findViewById(R.id.cause)
         chips = findViewById(R.id.chips)
@@ -97,7 +113,31 @@ class ResultActivity : AppCompatActivity() {
             Mode.COMPACT -> editor.setText(Highlighter.apply(this, TraceAnalyzer.compact(clean), isDark()))
             Mode.RAW -> editor.setText(raw)
         }
-        editor.isEnabled = true
+        applyEditingMode()
+    }
+
+    /** A selectable TextView still exposes copy actions, but will never start the IME. */
+    private fun applyEditingMode() {
+        val writable = editingAllowed && mode != Mode.COMPACT
+        if (writable) {
+            editor.setTextIsSelectable(false)
+            editor.keyListener = originalKeyListener
+            editor.setShowSoftInputOnFocus(true)
+            editor.isFocusableInTouchMode = true
+        } else {
+            editor.keyListener = null
+            editor.setTextIsSelectable(true)
+            editor.setShowSoftInputOnFocus(false)
+            (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+                .hideSoftInputFromWindow(editor.windowToken, 0)
+        }
+        editEye.setImageResource(if (writable) R.drawable.ic_eye_open else R.drawable.ic_eye_closed)
+        editEye.contentDescription = getString(
+            if (writable) R.string.editing_allowed else R.string.editing_blocked
+        )
+        // Compact is a generated view, always read-only to avoid discarding text edits.
+        editEye.isEnabled = mode != Mode.COMPACT
+        editEye.alpha = if (editEye.isEnabled) 1f else 0.45f
     }
 
     private fun summarize() {
