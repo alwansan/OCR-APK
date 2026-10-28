@@ -7,6 +7,8 @@ import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import com.alwansan.crashlogocr.ocr.OcrEngine
+import com.alwansan.crashlogocr.ocr.OcrLanguage
+import com.alwansan.crashlogocr.ocr.OcrLanguagePreferences
 
 /**
  * Transparent share target. Quick mode: OCR -> clean -> copy -> close.
@@ -39,7 +41,9 @@ class ShareActivity : Activity() {
         toast(R.string.recognizing)
         OcrEngine.recognize(this, uris.take(12)) { result ->
             result.onSuccess { out ->
-                val clean = TraceCleaner.clean(out.lines, out.imageWidth)
+                val clean = if (OcrLanguagePreferences.get(this) != OcrLanguage.ENGLISH &&
+                    !Regex("""(?:java\\.lang\\.|Exception|Error|Caused by:)""").containsMatchIn(out.rawText))
+                    out.rawText else TraceCleaner.clean(out.lines, out.imageWidth)
                 if (out.rawText.isBlank()) {
                     toast(R.string.empty)
                 } else {
@@ -54,7 +58,7 @@ class ShareActivity : Activity() {
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                     }
                 }
-            }.onFailure { toast(R.string.read_failed) }
+            }.onFailure { Toast.makeText(this, it.localizedMessage ?: getString(R.string.read_failed), Toast.LENGTH_LONG).show() }
             busy = false
             finish()
         }
