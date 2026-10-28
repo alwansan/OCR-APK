@@ -116,6 +116,18 @@ class ImageTextActivity : AppCompatActivity() {
                 Toast.makeText(this, R.string.crop_hint, Toast.LENGTH_LONG).show()
         }
         runCrop.setOnClickListener { runCroppedOcr() }
+        val gestureButton = findViewById<MaterialButton>(R.id.gestureMode)
+        gestureButton.setOnClickListener {
+            val enabled = !canvas.isSelectionMode
+            canvas.setSelectionMode(enabled)
+            gestureButton.setText(
+                if (enabled) R.string.gesture_select_mode else R.string.gesture_pan_mode
+            )
+            gestureButton.contentDescription = getString(
+                if (enabled) R.string.gesture_select_description
+                else R.string.gesture_pan_description
+            )
+        }
         previous.setOnClickListener { loadPage(currentPage - 1) }
         next.setOnClickListener { loadPage(currentPage + 1) }
         loadPage(savedInstanceState?.getInt("page", 0) ?: 0)
@@ -126,6 +138,8 @@ class ImageTextActivity : AppCompatActivity() {
         currentPage = index
         val page = pages[index]
         cropSelecting = false
+        canvas.setSelectionMode(false)
+        findViewById<MaterialButton>(R.id.gestureMode).setText(R.string.gesture_pan_mode)
         findViewById<MaterialButton>(R.id.runCrop).visibility = View.GONE
         findViewById<MaterialButton>(R.id.cropMode).alpha = 1f
         findViewById<MaterialButton>(R.id.uncertainWords).isEnabled =
