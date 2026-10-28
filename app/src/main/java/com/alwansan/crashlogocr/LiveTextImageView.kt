@@ -192,6 +192,11 @@ class LiveTextImageView @JvmOverloads constructor(
     )
     private fun setRange(a: Int, b: Int) {
         if (a !in words.indices || b !in words.indices) return
+        // Avoid rebuilding a large selection and allocating strings on every
+        // touch-move event while the finger stays over the same target word.
+        if (selected.size == abs(a - b) + 1 &&
+            selected.firstOrNull() == min(a, b) &&
+            selected.lastOrNull() == max(a, b)) return
         selected.clear()
         for (i in min(a, b)..max(a, b)) selected.add(i)
         notifySelection(); invalidate()
@@ -215,7 +220,7 @@ class LiveTextImageView @JvmOverloads constructor(
         return best
     }
     private fun handleAnchor(x: Float, y: Float): Int {
-        if (selected.size < 2) return -1
+        if (selected.isEmpty()) return -1
         val ordered = selected.sorted()
         for ((index, anchor, leading) in listOf(
             Triple(ordered.first(), ordered.last(), true),
