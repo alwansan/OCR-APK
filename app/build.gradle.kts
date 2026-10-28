@@ -11,8 +11,8 @@ android {
         applicationId = "com.alwansan.crashlogocr"
         minSdk = 23
         targetSdk = 34
-        versionCode = 3
-        versionName = "2.1.0"
+        versionCode = 4
+        versionName = "2.2.0"
         // Only real phones: drops x86 libs from the bundled ML Kit model => smaller APK.
         ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
     }
@@ -39,6 +39,7 @@ android {
 dependencies {
     // Bundled Latin model: works offline from the first launch.
     implementation("com.google.mlkit:text-recognition:16.0.1")
+    implementation("cz.adaptech.tesseract4android:tesseract4android:4.9.0")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.activity:activity-ktx:1.9.3")
     implementation("com.google.android.material:material:1.12.0")
@@ -47,3 +48,37 @@ dependencies {
     implementation("androidx.exifinterface:exifinterface:1.3.7")
     testImplementation("junit:junit:4.13.2")
 }
+
+// Download official Arabic and English OCR data for OFFLINE use, including Android Studio builds.
+// User-initiated app Settings can refresh each traineddata pack later without replacing the APK.
+val trainedData = layout.projectDirectory.dir("src/main/assets/tessdata")
+val prepareOcrModels = tasks.register("prepareOcrModels") {
+    val codes = listOf("ara", "eng")
+    outputs.files(codes.map { trainedData.file("$"+"{it}.traineddata") })
+    doLast {
+        val dir = trainedData.asFile
+        check(dir.isDirectory || dir.mkdirs())
+        for (code in codes) {
+            val destination = java.io.File(dir, "$"+"{code}.traineddata")
+            if (destination.length() >= 100_000L) continue
+            val staging = java.io.File(dir, "$"+"{code}.part")
+            val url = java.net.URL("https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/$"+"{code}.traineddata")
+            try {
+                val connection = url.openConnection().apply {
+                    connectTimeout = 20_000
+                    readTimeout = 75_000
+                }
+                connection.getInputStream().use { input ->
+                    staging.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                check(staging.length() in 100_000L..35_000_000L) { "Invalid $"+"code model" }
+                check(staging.renameTo(destination)) { "Cannot install model $"+"code" }
+            } finally {
+                staging.delete()
+            }
+        }
+    }
+}
+tasks.named("preBuild") { dependsOn(prepareOcrModels) }
