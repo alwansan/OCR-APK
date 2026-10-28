@@ -21,8 +21,10 @@ object OcrLanguagePreferences {
     private const val PREF = "settings"
     fun get(context: Context): OcrLanguage {
         val saved = context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
-            .getString("ocr_language", OcrLanguage.ENGLISH.name)
-        return OcrLanguage.entries.firstOrNull { it.name == saved } ?: OcrLanguage.ENGLISH
+            .getString("ocr_language", null)
+        val automatic = if (context.resources.configuration.locales[0].language == "ar")
+            OcrLanguage.BILINGUAL else OcrLanguage.ENGLISH
+        return OcrLanguage.entries.firstOrNull { it.name == saved } ?: automatic
     }
     fun set(context: Context, language: OcrLanguage) {
         context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
