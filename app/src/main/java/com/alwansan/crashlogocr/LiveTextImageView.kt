@@ -176,9 +176,13 @@ class LiveTextImageView @JvmOverloads constructor(
         for (i in selected.sorted()) {
             val w = words.getOrNull(i) ?: continue
             previous?.let { p ->
+                if (lineMode) {
+                    b.append("\n")
+                } else {
                 val height = max(p.bottom - p.top, w.bottom - w.top)
                 val centreDelta = abs((w.top + w.bottom - p.top - p.bottom) / 2f)
                 b.append(if (centreDelta <= height * 0.65f) " " else "\n")
+                }
             }
             b.append(w.text)
             previous = w
