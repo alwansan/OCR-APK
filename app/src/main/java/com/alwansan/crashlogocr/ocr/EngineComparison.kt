@@ -8,16 +8,23 @@ object EngineComparison {
             text.lines().map { it.trim() }.filter { it.isNotEmpty() }
         val a = meaningful(first)
         val b = meaningful(second)
-        val remainingB = b.toMutableList()
+        val available = b.groupingBy { it }.eachCount().toMutableMap()
+        val matched = mutableMapOf<String, Int>()
         val firstOnly = mutableListOf<String>()
         var common = 0
         for (line in a) {
-            val index = remainingB.indexOf(line)
-            if (index >= 0) {
-                remainingB.removeAt(index)
+            if ((available[line] ?: 0) > 0) {
+                available[line] = available.getValue(line) - 1
+                matched[line] = (matched[line] ?: 0) + 1
                 common++
             } else firstOnly += line
         }
-        return Differences(common, firstOnly, remainingB)
+        val secondOnly = mutableListOf<String>()
+        for (line in b) {
+            if ((matched[line] ?: 0) > 0) {
+                matched[line] = matched.getValue(line) - 1
+            } else secondOnly += line
+        }
+        return Differences(common, firstOnly, secondOnly)
     }
 }
