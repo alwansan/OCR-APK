@@ -126,4 +126,9 @@
     <string name="engine_lab_empty">ماكو نص معروف</string>
     <string name="engine_lab_copy">نسخ النتيجة</string>
     <string name="engine_lab_preview_trimmed">\n…المعاينة مختصرة للأداء؛ نسخ النتيجة ينسخ النص الكامل.</string>
+    <string name="engine_lab_copy_diff">نسخ الاختلافات</string>
+    <string name="engine_lab_only_first">موجود فقط عند ML Kit</string>
+    <string name="engine_lab_only_second">موجود فقط عند Tesseract</string>
+    <string name="engine_lab_no_diff">ماكو اختلافات بين الأسطر</string>
+    <string name="engine_lab_diff_trim">…هناك أسطر أخرى مخفية؛ انسخ النص الكامل للمراجعة</string>
 </resources>
