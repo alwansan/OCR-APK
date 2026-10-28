@@ -23,7 +23,7 @@ screenshot of the OCR viewer, not the original lossless scan.
 |---|---|---|---|---|
 | Existing ML Kit Text Recognition v2 | No Arabic recognizer | Supported, fast | Already integrated | Fast baseline |
 | Existing Tesseract4Android + tessdata_fast | Yes | Yes | Already integrated | Independent retry / offline fallback |
-| PaddleOCR PP-OCRv5 mobile det + en_mobile_rec | English only | Optimized for English | ONNX Runtime or Paddle-Lite | **Primary experimental target** |
+| PaddleOCR PP-OCRv6 small det + rec | Arabic not in unified v6 model | English and Latin scripts; newer small tier | ONNX Runtime; verify exported model operators | **Preferred first English A/B benchmark** |\n| PaddleOCR PP-OCRv5 mobile det + en_mobile_rec | English only | Proven specialized English option | ONNX Runtime or Paddle-Lite | Fallback English candidate |
 | PaddleOCR PP-OCRv5 mobile det + arabic_mobile_rec | Yes; also English supported | Arabic + English | ONNX Runtime; separate recognizer & dictionary | Primary Arabic candidate |
 | RapidOCR | Depends on configured models | PP-OCRv5/6 variants | ONNX Runtime, MNN, or other runtimes | Alternate model deployment/toolchain |
 
@@ -41,11 +41,11 @@ References (official where possible):
 
 ## How to implement the PaddleOCR proof of concept
 
-**Do not** replace ML Kit in the shipping path until tested.
+**Do not** replace ML Kit in the shipping path until tested. PP-OCRv6 (June 2026) has small/tiny/medium tiers for English and Latin scripts. Arabic still requires the PP-OCRv5 Arabic recognizer. See https://github.com/PaddlePaddle/PaddleOCR/releases/tag/v3.7.0 and official v6 documentation.
 1. Introduce a separate `PaddleOnnxEngine` behind a backend interface.
    Models are optional, downloaded on explicit user action, not embedded in the
    ~42 MB baseline APK. Checksums must be pinned to a specific model revision.
-2. Import official PP-OCRv5_mobile_det and `en_PP-OCRv5_mobile_rec` ONNX/ORT
+2. Benchmark PP-OCRv6_small_det + small_rec as the newer English baseline, and also PP-OCRv5_mobile_det + `en_PP-OCRv5_mobile_rec` ONNX/ORT
    with matching character dictionary and preprocessing, or use a verified
    MakeACopy-compatible asset bundle. For Arabic import
    `arabic_PP-OCRv5_mobile_rec` and its dictionary separately.
