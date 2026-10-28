@@ -43,7 +43,7 @@ object Updater {
         val semver = Regex("""^[vV]?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$""")
         val candidate = semver.matchEntire(tag.trim()) ?: return false
         val installed = semver.matchEntire(current.trim()) ?: return false
-        fun version(m: MatchResult) = (1..3).map { m.groupValues[it].toLongOrNull() ?: return emptyList() }
+        fun version(m: MatchResult) = (1..3).map { m.groupValues[it].toLongOrNull() ?: -1L }
         val a = version(candidate); val b = version(installed)
         if (a.size != 3 || b.size != 3) return false
         for (i in 0..2) if (a[i] != b[i]) return a[i] > b[i]
