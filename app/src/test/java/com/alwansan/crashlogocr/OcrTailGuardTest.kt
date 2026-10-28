@@ -7,6 +7,8 @@ class OcrTailGuardTest {
     @Test fun stripsObservedNonsenseOnlyAfterJavaFrame() {
         val frame = "java.lang.RuntimeException\nat com.android.internal.os.ZygoteInit.main(ZygoteInit.java:944)"
         assertEquals(frame, OcrTailGuard.stripClearlySpuriousSuffix(frame + "July!"))
+        assertEquals(frame, OcrTailGuard.stripClearlySpuriousSuffix(frame + "Jluy!"))
+        assertEquals(frame, OcrTailGuard.stripClearlySpuriousSuffix(frame + "ع"))
         assertEquals(frame, OcrTailGuard.stripClearlySpuriousSuffix(frame + "\nع"))
     }
     @Test fun keepsRealArabicAndNonTraceText() {
