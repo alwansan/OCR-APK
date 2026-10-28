@@ -13,7 +13,7 @@ object Updater {
 
     private const val API = "https://api.github.com/repos/alwansan/OCR-APK/releases/latest"
     private val io = Executors.newSingleThreadExecutor()
-    private val main = Handler(Looper.getMainLooper())
+    private val main by lazy { Handler(Looper.getMainLooper()) }
 
     fun check(callback: (Result<Info>) -> Unit) {
         io.execute {
