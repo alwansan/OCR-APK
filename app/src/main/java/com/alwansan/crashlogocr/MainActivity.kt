@@ -20,6 +20,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.alwansan.crashlogocr.ocr.OcrAccuracy
+import com.alwansan.crashlogocr.ocr.OcrAccuracyPreference
 import com.alwansan.crashlogocr.ocr.OcrLanguage
 import com.alwansan.crashlogocr.ocr.OcrLanguagePreferences
 import com.alwansan.crashlogocr.ocr.TessModels
@@ -125,6 +127,7 @@ class MainActivity : AppCompatActivity() {
         R.id.menuSettings -> { showSettings(); true }
         R.id.menuUpdate -> { checkUpdates(); true }
         R.id.menuLanguage -> { showLanguageSettings(); true }
+        R.id.menuAccuracy -> { showAccuracySettings(); true }
         R.id.menuUiLanguage -> { showUiLanguages(); true }
         else -> super.onOptionsItemSelected(item)
     }
@@ -158,6 +161,22 @@ class MainActivity : AppCompatActivity() {
                 dialog.dismiss()
                 val tag = when (index) { 1 -> "ar"; 2 -> "en"; else -> "" }
                 AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag))
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun showAccuracySettings() {
+        val options = arrayOf(
+            getString(R.string.ocr_accuracy_fast),
+            getString(R.string.ocr_accuracy_balanced),
+            getString(R.string.ocr_accuracy_high)
+        )
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.ocr_accuracy_menu)
+            .setSingleChoiceItems(options, OcrAccuracyPreference.get(this).ordinal) { dialog, index ->
+                OcrAccuracyPreference.set(this, OcrAccuracy.entries[index])
+                dialog.dismiss()
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
