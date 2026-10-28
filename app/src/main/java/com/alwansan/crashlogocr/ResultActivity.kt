@@ -1,6 +1,11 @@
 package com.alwansan.crashlogocr
 
 import android.content.Intent
+import android.graphics.BitmapFactory
+import android.graphics.BitmapRegionDecoder
+import android.graphics.Rect
+import android.widget.ImageView
+import com.google.android.material.card.MaterialCardView
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
@@ -65,6 +70,7 @@ class ResultActivity : AppCompatActivity() {
         headline = findViewById(R.id.headline)
         cause = findViewById(R.id.cause)
         chips = findViewById(R.id.chips)
+        setupSourcePreview()
 
         val wrap = findViewById<Chip>(R.id.wrapChip)
         wrap.isChecked = Prefs.wrapLines(this)
@@ -92,6 +98,39 @@ class ResultActivity : AppCompatActivity() {
             render(); summarize()
         }
         render(); summarize()
+    }
+
+    /** Existing history items without source images keep the old text-only result UI. */
+    @Suppress("DEPRECATION")
+    private fun setupSourcePreview() {
+        val card = findViewById<MaterialCardView>(R.id.sourceImageCard)
+        if (!ImageOverlayStore.hasImages(this, item.id)) {
+            card.visibility = View.GONE
+            return
+        }
+        card.visibility = View.VISIBLE
+        card.setOnClickListener {
+            startActivity(Intent(this, ImageTextActivity::class.java)
+                .putExtra(ImageTextActivity.EXTRA_ID, item.id))
+        }
+        // Decode only the upper strip of a potentially huge long screenshot as a thumbnail.
+        val file = ImageOverlayStore.pages(this, item.id).firstOrNull()?.file ?: return
+        val image = findViewById<ImageView>(R.id.sourceImagePreview)
+        runCatching {
+            BitmapRegionDecoder.newInstance(file.absolutePath, false)?.let { decoder ->
+                try {
+                    val h = minOf(decoder.height, maxOf(640, decoder.width))
+                    var sampling = 1
+                    while (decoder.width / sampling > 960) sampling *= 2
+                    val bmp = decoder.decodeRegion(
+                        Rect(0, 0, decoder.width, h),
+                        BitmapFactory.Options().apply { inSampleSize = sampling })
+                    image.setImageBitmap(bmp)
+                } finally {
+                    decoder.recycle()
+                }
+            }
+        }
     }
 
     private fun isDark() =
