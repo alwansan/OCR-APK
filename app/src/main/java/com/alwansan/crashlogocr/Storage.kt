@@ -78,5 +78,6 @@ object HistoryStore {
             arr.put(JSONObject().put("id", it.id).put("raw", it.raw).put("clean", it.clean))
         }
         p(c).edit().putString(KEY, arr.toString()).apply()
+        ImageOverlayStore.prune(c, items.take(MAX).map { it.id }.toSet())
     }
 }
