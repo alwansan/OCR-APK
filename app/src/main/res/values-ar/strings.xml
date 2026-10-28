@@ -74,4 +74,19 @@
     <string name="extract_n">استخراج (%1$d)</string>
     <string name="shortcut_latest">آخر لقطة شاشة</string>
     <string name="choose_from_photos">اختيار من معرض الصور</string>
+    <string name="image_text_title">تحديد النص من الصورة</string>
+    <string name="open_image_text">عرض النص على الصورة الأصلية</string>
+    <string name="image_text_subtitle">اضغط على الكلمات وحددها، كبّر بإصبعين، واسحب للتحديد. بدون كيبورد.</string>
+    <string name="image_select_help">اضغط على الكلمات أو اسحب على السطر حتى تحدد النص مباشرة من الصورة</string>
+    <string name="image_page_count">الصورة %1$d من %2$d</string>
+    <string name="selected_word_count">تم تحديد %1$d كلمة</string>
+    <string name="select_words_hint">اضغط على كلمة أو اسحب على مجموعة كلمات للتحديد</string>
+    <string name="select_all_words">تحديد الكل</string>
+    <string name="clear_selection">إلغاء التحديد</string>
+    <string name="copy_selected">نسخ المحدد</string>
+    <string name="fit_image">ملاءمة</string>
+    <string name="previous_page">السابقة</string>
+    <string name="next_page">التالية</string>
+    <string name="no_saved_image">ماكو صورة محفوظة لهذه النتيجة. جرب تستخرجها من الصورة مرة ثانية.</string>
+    <string name="image_no_word_boxes">الصورة موجودة لكن لم تُكتشف مواقع كلمات OCR فيها.</string>
 </resources>
