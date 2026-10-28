@@ -34,6 +34,37 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+
+    <!-- Tap to open the original screenshot with selectable OCR words. -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/sourceImageCard"
+        style="@style/Widget.Material3.CardView.Filled"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp" android:layout_marginTop="12dp"
+        android:visibility="gone" android:clickable="true"
+        android:focusable="true" app:cardCornerRadius="18dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:padding="12dp" android:gravity="center_vertical"
+            android:orientation="horizontal">
+            <ImageView android:id="@+id/sourceImagePreview"
+                android:layout_width="95dp" android:layout_height="92dp"
+                android:scaleType="centerCrop"
+                android:contentDescription="@string/open_image_text"/>
+            <LinearLayout android:layout_width="0dp" android:layout_weight="1"
+                android:layout_height="wrap_content" android:paddingStart="12dp"
+                android:orientation="vertical">
+                <TextView android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface" android:textSize="16sp"
+                    android:text="@string/open_image_text"/>
+                <TextView android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:layout_marginTop="4dp"
+                    android:textColor="?attr/colorOnSurfaceVariant" android:textSize="13sp"
+                    android:text="@string/image_text_subtitle"/>
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:layout_marginTop="10dp" android:gravity="center_vertical"
         android:orientation="horizontal" android:paddingStart="12dp" android:paddingEnd="12dp">
