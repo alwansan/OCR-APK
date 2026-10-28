@@ -15,6 +15,9 @@ import com.googlecode.tesseract.android.TessBaseAPI
 internal class OcrTessLineCheck(private val context: Context) : AutoCloseable {
     private var api: TessBaseAPI? = null
     private var unavailable = false
+    private var checksOnPage = 0
+
+    fun beginPage() { checksOnPage = 0 }
 
     private fun engine(): TessBaseAPI? {
         if (unavailable) return null
@@ -44,16 +47,22 @@ internal class OcrTessLineCheck(private val context: Context) : AutoCloseable {
         limit: Int
     ): List<OcrPassFusion.Line> {
         if (limit <= 0 || candidates.isEmpty()) return candidates
+        // Hard per-page budget: tall screenshots must not trigger hundreds of
+        // expensive JNI recognitions or stall the phone for an entire page.
+        val pageBudget = if (limit >= 18) 24 else 8
+        val remaining = (pageBudget - checksOnPage).coerceAtLeast(0)
+        if (remaining == 0) return candidates
         val suspectIndices = candidates.indices
             .map { it to OcrLineVerifier.priority(candidates[it]) }
             .filter { it.second > 0 }
             .sortedByDescending { it.second }
-            .take(limit)
+            .take(minOf(limit, remaining))
             .map { it.first }
         if (suspectIndices.isEmpty()) return candidates
         val tess = engine() ?: return candidates
         val output = candidates.toMutableList()
         for (index in suspectIndices) {
+            checksOnPage++
             val source = candidates[index]
             val text = runCatching { readLine(tess, bitmap, source, darkBackground) }.getOrNull()
             if (!text.isNullOrBlank() && OcrLineVerifier.useAlternative(source.text, text)) {
@@ -111,7 +120,7 @@ internal class OcrTessLineCheck(private val context: Context) : AutoCloseable {
                 contrast.recycle()
             }
         } finally {
-            crop.recycle()
+            if (crop !== tile) crop.recycle()
         }
     }
 
