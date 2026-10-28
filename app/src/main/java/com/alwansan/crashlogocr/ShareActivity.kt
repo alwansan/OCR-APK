@@ -42,7 +42,7 @@ class ShareActivity : Activity() {
         OcrEngine.recognize(this, uris.take(12)) { result ->
             result.onSuccess { out ->
                 val clean = if (OcrLanguagePreferences.get(this) != OcrLanguage.ENGLISH &&
-                    !Regex("""(?:java\\.lang\\.|Exception|Error|Caused by:)""").containsMatchIn(out.rawText))
+                    !Regex("""(?:java\.lang\.|Exception|Error|Caused by:)""").containsMatchIn(out.rawText))
                     out.rawText else TraceCleaner.clean(out.lines, out.imageWidth)
                 if (out.rawText.isBlank()) {
                     toast(R.string.empty)
