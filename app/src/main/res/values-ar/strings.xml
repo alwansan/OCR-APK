@@ -34,6 +34,10 @@
     <string name="mode_compact">مختصر</string>
     <string name="mode_raw">الأصلي</string>
     <string name="result_title">النتيجة</string>
+    <string name="editing_allowed">التحرير مسموح، اضغط لتفعيل القراءة فقط</string>
+    <string name="editing_blocked">القراءة فقط، اضغط للسماح بالتحرير</string>
+    <string name="editing_on_message">تم السماح بالتحرير</string>
+    <string name="editing_off_message">وضع القراءة فقط: تگدر تحدد النص وتنسخه بدون كيبورد</string>
     <string name="clean_hint">يظهر النص هنا</string>
     <string name="settings">الإعدادات</string>
     <string name="setting_quick">نسخ فوري عند المشاركة (يفتح المراجعة إذا ما انكشف خطأ)</string>
