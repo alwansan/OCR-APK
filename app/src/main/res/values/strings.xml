@@ -107,4 +107,7 @@ Pull down to refresh.</string>
     <string name="gesture_pan_description">Move and scroll the image freely</string>
     <string name="gesture_select_description">Drag from one word to another to select a range</string>
     <string name="gesture_help">Drag to move • Tap a word • Long-press to select • Use the right scrollbar to jump</string>
+    <string name="word_selection_mode">Words</string>
+    <string name="line_selection_mode">Whole lines</string>
+    <string name="line_selection_help">Select an entire OCR line when individual word boxes are missing</string>
 </resources>
