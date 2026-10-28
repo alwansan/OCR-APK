@@ -86,8 +86,8 @@ val prepareOcrModels = tasks.register("prepareOcrModels") {
         for (code in codes) {
             val destination = File(dir, "${code}.traineddata")
             if (destination.length() >= 100_000L) continue
-            val staging = File(dir, "$"+"{code}.part")
-            val url = URL("https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/$"+"{code}.traineddata")
+            val staging = File(dir, "${code}.part")
+            val url = URL("https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/87416418657359cb625c412a48b6e1d6d41c29bd/${code}.traineddata")
             try {
                 val connection = url.openConnection().apply {
                     connectTimeout = 20_000
