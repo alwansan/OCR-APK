@@ -61,7 +61,9 @@ class ImageTextActivity : AppCompatActivity() {
         next = findViewById(R.id.nextPage)
 
         canvas.onSelectionChanged = { text, count ->
-            counter.text = getString(R.string.selected_word_count, count)
+            counter.text = if (canvas.isLineMode())
+                getString(R.string.selected_line_count, count)
+                else getString(R.string.selected_word_count, count)
             previewText.text = if (text.isBlank()) getString(R.string.select_words_hint) else text
             copy.isEnabled = count > 0
             share.isEnabled = count > 0
@@ -121,6 +123,9 @@ class ImageTextActivity : AppCompatActivity() {
             canvas.setLineMode(!canvas.isLineMode())
             lineToggle.setText(if (canvas.isLineMode()) R.string.line_selection_mode
                 else R.string.word_selection_mode)
+            counter.text = if (canvas.isLineMode())
+                getString(R.string.selected_line_count, canvas.selectionSize())
+                else getString(R.string.selected_word_count, canvas.selectionSize())
         }
         val gestureButton = findViewById<MaterialButton>(R.id.gestureMode)
         gestureButton.setOnClickListener {
