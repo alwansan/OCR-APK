@@ -63,6 +63,8 @@ class LiveTextImageView @JvmOverloads constructor(
     private var iw = 1
     private var ih = 1
     private var words: List<OcrWord> = emptyList()
+    private var sourceBoxes: List<OcrWord> = emptyList()
+    private var lineMode = false
     private val selected = linkedSetOf<Int>()
 
     private var baseScale = 1f
@@ -120,10 +122,23 @@ class LiveTextImageView @JvmOverloads constructor(
                 ?: error("Unable to open screenshot")
         }
         iw = reader!!.width; ih = reader!!.height
-        words = detected.filter { it.valid }
+        sourceBoxes = detected.filter { it.valid }
+        words = if (lineMode && sourceBoxes.any { it.isLine })
+            sourceBoxes.filter { it.isLine } else sourceBoxes.filterNot { it.isLine }
         selected.clear()
         cropMode = false; cropA = null; cropB = null
         if (width > 0 && height > 0) resetView()
+        notifySelection()
+        invalidate()
+    }
+
+    fun isLineMode() = lineMode
+    fun hasLineBoxes() = sourceBoxes.any { it.isLine }
+    fun setLineMode(enabled: Boolean) {
+        lineMode = enabled
+        words = if (enabled && sourceBoxes.any { it.isLine })
+            sourceBoxes.filter { it.isLine } else sourceBoxes.filterNot { it.isLine }
+        selected.clear()
         notifySelection()
         invalidate()
     }
