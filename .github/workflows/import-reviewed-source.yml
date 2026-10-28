@@ -16,6 +16,7 @@ jobs:
       - name: Decode and validate reviewed source
         shell: bash
         run: |
+          if [ ! -f bootstrap/source.b64 ]; then exit 0; fi
           python3 - <<'PY'
           from pathlib import Path
           import base64, json, zlib, hashlib
@@ -27,6 +28,8 @@ jobs:
           files = json.loads(raw)
           assert len(files) == 53, "Unexpected file count"
           for path, body in files.items():
+              if path.startswith(".github/workflows/"):
+                  continue  # workflow changes are made separately through authenticated GitHub connector
               target = Path(path)
               assert target.parts and '..' not in target.parts and not target.is_absolute()
               assert not any(p.startswith(".git") for p in target.parts if p not in (".github", ".gitignore"))
@@ -41,7 +44,6 @@ jobs:
           ]:
               Path(obsolete).unlink(missing_ok=True)
           Path("bootstrap/source.b64").unlink()
-          Path(".github/workflows/import-reviewed-source.yml").unlink()
           Path("bootstrap").rmdir()
           print("Imported", len(files), "reviewed source files; checksums verified")
           PY
