@@ -74,8 +74,8 @@ References (official where possible):
 ## Separate immediate geometry fix in this branch
 
 `ImageLineGeometry` estimates the left boundary of visible bright glyphs
-on a dark screenshot **independently of ML Kit boxes**. Only the full-line
-selection rectangle is extended; actual OCR text is NOT fabricated or
+on a dark screenshot **independently of ML Kit boxes**. Full-line and leading-word
+selection rectangles are extended; actual OCR text is NOT fabricated or
 silently repaired. This is deliberately a bounded fallback, not a substitute
 for the real Paddle detection model.
 
