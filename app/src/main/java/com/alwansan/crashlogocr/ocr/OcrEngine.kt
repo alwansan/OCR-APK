@@ -46,9 +46,17 @@ object OcrEngine {
 
     private fun recognizeBlocking(context: Context, uris: List<Uri>): OcrOutput {
         val language = OcrLanguagePreferences.get(context)
-        if (language != OcrLanguage.ENGLISH)
+        if (language == OcrLanguage.ARABIC)
             return TesseractEngine.recognize(context, uris, language)
+        val latin = recognizeLatin(context, uris)
+        // Default bilingual mode on Arabic phones should still recognize Java
+        // crashes with ML Kit. Preserve Tesseract for ordinary Arabic documents.
+        if (language == OcrLanguage.BILINGUAL && !OcrScriptRouter.isJavaTrace(latin.rawText))
+            return TesseractEngine.recognize(context, uris, language)
+        return latin
+    }
 
+    private fun recognizeLatin(context: Context, uris: List<Uri>): OcrOutput {
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
         try {
             val lines = mutableListOf<OcrLine>()
