@@ -67,6 +67,7 @@ object OcrEngine {
             var baseY = 0
 
             for ((pageIndex, uri) in uris.withIndex()) {
+                lineChecker.beginPage()
                 val pageWords = mutableListOf<OcrPassFusion.Word>()
                 val pageLines = mutableListOf<OcrPassFusion.Line>()
                 var pageHeight = 0
