@@ -13,7 +13,7 @@ import com.googlecode.tesseract.android.TessBaseAPI
  * text in reading order (rather than assigning imaginary rectangles to OCR lines).
  */
 internal object TesseractEngine {
-    private data class PixelWord(val text: String, val l: Int, val t: Int, val r: Int, val b: Int)
+    private data class PixelWord(val text: String, val l: Int, val t: Int, val r: Int, val b: Int, val confidence: Int?)
     private val wordSpan = Regex("""<span\b(?=[^>]*\bocrx_word\b)[^>]*>.*?</span>""",
         setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
     private val bbox = Regex("""\bbbox\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)""")
@@ -31,7 +31,8 @@ internal object TesseractEngine {
             if (middle < ownLo || middle >= ownHi) continue
             val html = content.find(match.value)?.groupValues?.get(1) ?: continue
             val text = Html.fromHtml(html).toString().trim()
-            if (text.isNotBlank()) result += PixelWord(text, l.toInt(), top, r.toInt(), bottom)
+            if (text.isNotBlank()) result += PixelWord(text, l.toInt(), top, r.toInt(), bottom,
+                wordConfidence.find(match.value)?.groupValues?.get(1)?.toIntOrNull())
         }
         return result
     }
@@ -83,7 +84,7 @@ internal object TesseractEngine {
                             w.text, (w.l.toFloat()/width).coerceIn(0f, 1f),
                             (w.t.toFloat()/imageHeight).coerceIn(0f, 1f),
                             (w.r.toFloat()/width).coerceIn(0f, 1f),
-                            (w.b.toFloat()/imageHeight).coerceIn(0f, 1f), pageIndex
+                            (w.b.toFloat()/imageHeight).coerceIn(0f, 1f), pageIndex, w.confidence
                         )
                         word.takeIf { it.valid }
                     }
