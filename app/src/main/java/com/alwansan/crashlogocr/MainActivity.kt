@@ -13,6 +13,8 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.MaterialToolbar
@@ -123,6 +125,7 @@ class MainActivity : AppCompatActivity() {
         R.id.menuSettings -> { showSettings(); true }
         R.id.menuUpdate -> { checkUpdates(); true }
         R.id.menuLanguage -> { showLanguageSettings(); true }
+        R.id.menuUiLanguage -> { showUiLanguages(); true }
         else -> super.onOptionsItemSelected(item)
     }
 
@@ -133,6 +136,29 @@ class MainActivity : AppCompatActivity() {
             .setTitle(R.string.settings)
             .setMultiChoiceItems(labels, checked) { _, i, on -> if (i == 0) Prefs.setQuickCopy(this, on) }
             .setPositiveButton(android.R.string.ok, null)
+            .show()
+    }
+
+    private fun showUiLanguages() {
+        val options = arrayOf(
+            getString(R.string.ui_language_auto),
+            getString(R.string.ui_language_ar),
+            getString(R.string.ui_language_en)
+        )
+        val current = AppCompatDelegate.getApplicationLocales().toLanguageTags()
+        val selected = when {
+            current.startsWith("ar") -> 1
+            current.startsWith("en") -> 2
+            else -> 0
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.ui_language)
+            .setSingleChoiceItems(options, selected) { dialog, index ->
+                dialog.dismiss()
+                val tag = when (index) { 1 -> "ar"; 2 -> "en"; else -> "" }
+                AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag))
+            }
+            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
