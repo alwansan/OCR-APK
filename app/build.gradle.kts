@@ -36,8 +36,8 @@ android {
         targetSdk = 34
         // GitHub CI builds use monotonically increasing codes so later signed APKs update in place.
         val ciBuild = providers.gradleProperty("ciBuildNumber").orNull?.toIntOrNull()
-        versionCode = 28000 + (ciBuild ?: 0)
-        versionName = if (ciBuild == null) "2.8.0" else "2.8.0-dev.$ciBuild"
+        versionCode = 30000 + (ciBuild ?: 0)
+        versionName = if (ciBuild == null) "3.0.0-alpha.1" else "3.0.0-alpha.$ciBuild"
         // Only real phones: drops x86 libs from the bundled ML Kit model => smaller APK.
         ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
     }
