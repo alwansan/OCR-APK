@@ -1,6 +1,7 @@
 package com.alwansan.crashlogocr.ocr
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
 import java.io.File
 import java.io.FileOutputStream
@@ -22,7 +23,7 @@ object OcrLanguagePreferences {
     fun get(context: Context): OcrLanguage {
         val saved = context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
             .getString("ocr_language", null)
-        val automatic = if (context.resources.configuration.locales[0].language == "ar")
+        val automatic = if ((if (Build.VERSION.SDK_INT >= 24) context.resources.configuration.locales[0].language else context.resources.configuration.locale.language) == "ar")
             OcrLanguage.BILINGUAL else OcrLanguage.ENGLISH
         return OcrLanguage.entries.firstOrNull { it.name == saved } ?: automatic
     }
