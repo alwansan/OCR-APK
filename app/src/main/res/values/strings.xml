@@ -74,4 +74,19 @@ Pull down to refresh.</string>
     <string name="extract_n">Extract (%1$d)</string>
     <string name="shortcut_latest">Latest screenshot</string>
     <string name="choose_from_photos">Select from Photos</string>
+    <string name="image_text_title">Select text on image</string>
+    <string name="open_image_text">View OCR on original image</string>
+    <string name="image_text_subtitle">Tap the image to select words. Pinch to zoom; drag across words. No keyboard.</string>
+    <string name="image_select_help">Tap or drag on words to select OCR text directly from the screenshot</string>
+    <string name="image_page_count">Image %1$d / %2$d</string>
+    <string name="selected_word_count">%1$d words selected</string>
+    <string name="select_words_hint">Tap a word or drag across a line to select text</string>
+    <string name="select_all_words">Select all</string>
+    <string name="clear_selection">Clear selection</string>
+    <string name="copy_selected">Copy selected</string>
+    <string name="fit_image">Fit</string>
+    <string name="previous_page">Previous</string>
+    <string name="next_page">Next</string>
+    <string name="no_saved_image">No image saved for this result. Scan a screenshot again.</string>
+    <string name="image_no_word_boxes">Image available, but no OCR word locations were detected.</string>
 </resources>
