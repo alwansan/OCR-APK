@@ -7,7 +7,7 @@ class OcrBenchmarkTest(unittest.TestCase):
     def test_edit_distance_preserves_code_case_and_punctuation(self):
         self.assertEqual(0, levenshtein("android.app.ActivityThread", "android.app.ActivityThread"))
         self.assertEqual(1, levenshtein("ActivityThread", "activityThread"))
-        self.assertEqual(4, levenshtein("android", "roid"))
+        self.assertEqual(3, levenshtein("android", "roid"))
 
     def test_arabic_nfc_matches_and_line_recall(self):
         data = {"cases": [{
