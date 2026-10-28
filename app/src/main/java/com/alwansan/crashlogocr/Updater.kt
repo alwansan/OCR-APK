@@ -2,40 +2,55 @@ package com.alwansan.crashlogocr
 
 import android.os.Handler
 import android.os.Looper
-import org.json.JSONObject
+import org.json.JSONArray
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.Executors
 
-/** Manual "check for updates" against GitHub Releases. The app never touches the network otherwise. */
+/**
+ * Manual checks only: find published GitHub APK releases, including feature-branch
+ * prereleases. Does not download/install APKs silently.
+ */
 object Updater {
     data class Info(val tag: String, val newer: Boolean, val apkUrl: String?, val pageUrl: String)
-
-    private const val API = "https://api.github.com/repos/alwansan/OCR-APK/releases/latest"
+    private const val API = "https://api.github.com/repos/alwansan/OCR-APK/releases?per_page=30"
     private val io = Executors.newSingleThreadExecutor()
     private val main by lazy { Handler(Looper.getMainLooper()) }
 
     fun check(callback: (Result<Info>) -> Unit) {
         io.execute {
-            val r = runCatching {
-                val c = URL(API).openConnection() as HttpURLConnection
-                c.connectTimeout = 8000; c.readTimeout = 8000
-                c.setRequestProperty("Accept", "application/vnd.github+json")
+            val result = runCatching {
+                val conn = URL(API).openConnection() as HttpURLConnection
+                conn.connectTimeout = 10_000
+                conn.readTimeout = 10_000
+                conn.setRequestProperty("Accept", "application/vnd.github+json")
                 try {
-                    if (c.responseCode == 404) error("no_release")
-                    if (c.responseCode != 200) error("http_${c.responseCode}")
-                    val j = JSONObject(c.inputStream.bufferedReader().readText())
-                    val tag = j.getString("tag_name")
-                    var apk: String? = null
-                    val assets = j.optJSONArray("assets")
-                    if (assets != null) for (i in 0 until assets.length()) {
-                        val a = assets.getJSONObject(i)
-                        if (a.getString("name").endsWith(".apk")) { apk = a.getString("browser_download_url"); break }
+                    if (conn.responseCode != 200) error("http_${conn.responseCode}")
+                    val releases = JSONArray(conn.inputStream.bufferedReader().use { it.readText() })
+                    var found: Info? = null
+                    for (index in 0 until releases.length()) {
+                        val r = releases.getJSONObject(index)
+                        if (r.optBoolean("draft", false)) continue
+                        val tag = r.optString("tag_name")
+                        val assets = r.optJSONArray("assets") ?: continue
+                        var apk: String? = null
+                        for (a in 0 until assets.length()) {
+                            val asset = assets.getJSONObject(a)
+                            if (asset.optString("name").endsWith(".apk", ignoreCase = true)) {
+                                apk = asset.optString("browser_download_url").takeIf { it.startsWith("https://") }
+                                break
+                            }
+                        }
+                        if (apk == null) continue
+                        val info = Info(tag, isNewer(tag, BuildConfig.VERSION_NAME), apk, r.optString("html_url"))
+                        if (found == null || isNewer(tag, found.tag)) found = info
                     }
-                    Info(tag, isNewer(tag, BuildConfig.VERSION_NAME), apk, j.getString("html_url"))
-                } finally { c.disconnect() }
+                    found ?: error("no_release")
+                } finally {
+                    conn.disconnect()
+                }
             }
-            main.post { callback(r) }
+            main.post { callback(result) }
         }
     }
 
@@ -43,14 +58,24 @@ object Updater {
         val semver = Regex("""^[vV]?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$""")
         val candidate = semver.matchEntire(tag.trim()) ?: return false
         val installed = semver.matchEntire(current.trim()) ?: return false
-        fun version(m: MatchResult) = (1..3).map { m.groupValues[it].toLongOrNull() ?: -1L }
-        val a = version(candidate); val b = version(installed)
-        if (a.size != 3 || b.size != 3) return false
+        val a = (1..3).map { candidate.groupValues[it].toLongOrNull() ?: -1L }
+        val b = (1..3).map { installed.groupValues[it].toLongOrNull() ?: -1L }
         for (i in 0..2) if (a[i] != b[i]) return a[i] > b[i]
         val preA = candidate.groupValues[4]
         val preB = installed.groupValues[4]
         if (preA.isEmpty()) return preB.isNotEmpty()
         if (preB.isEmpty()) return false
-        return preA > preB
+        val ca = preA.split('.'); val cb = preB.split('.')
+        for (i in 0 until minOf(ca.size, cb.size)) {
+            val x = ca[i].toLongOrNull(); val y = cb[i].toLongOrNull()
+            val comparison = when {
+                x != null && y != null -> x.compareTo(y)
+                x != null -> -1
+                y != null -> 1
+                else -> ca[i].compareTo(cb[i])
+            }
+            if (comparison != 0) return comparison > 0
+        }
+        return ca.size > cb.size
     }
 }
