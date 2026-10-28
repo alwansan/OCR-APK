@@ -12,6 +12,10 @@ import android.view.MenuItem
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import android.util.TypedValue
+import android.view.View
+import com.alwansan.crashlogocr.ocr.OcrLanguage
+import com.alwansan.crashlogocr.ocr.OcrLanguagePreferences
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
@@ -108,6 +112,11 @@ class ResultActivity : AppCompatActivity() {
     }
 
     private fun render() {
+        val isArabicDocument = OcrLanguagePreferences.get(this) != OcrLanguage.ENGLISH &&
+            !TraceAnalyzer.analyze(clean).hasError
+        editor.textDirection = if (isArabicDocument) View.TEXT_DIRECTION_FIRST_STRONG
+            else View.TEXT_DIRECTION_LTR
+        editor.setTextSize(TypedValue.COMPLEX_UNIT_SP, if (isArabicDocument) 16f else 13.5f)
         when (mode) {
             Mode.CLEAN -> editor.setText(Highlighter.apply(this, clean, isDark()))
             Mode.COMPACT -> editor.setText(Highlighter.apply(this, TraceAnalyzer.compact(clean), isDark()))
@@ -142,6 +151,8 @@ class ResultActivity : AppCompatActivity() {
 
     private fun summarize() {
         val r = TraceAnalyzer.analyze(clean)
+        val isDocument = OcrLanguagePreferences.get(this) != OcrLanguage.ENGLISH && !r.hasError
+        findViewById<View>(R.id.summaryCard).visibility = if (isDocument) View.GONE else View.VISIBLE
         headline.text = if (r.headline.isBlank()) getString(R.string.no_error_found) else r.headline
         cause.text = r.rootCause?.let { getString(R.string.root_cause, it) }.orEmpty()
         cause.visibility = if (r.rootCause == null) android.view.View.GONE else android.view.View.VISIBLE
