@@ -56,6 +56,7 @@ object OcrEngine {
                             line.text, box.left, baseY + tile.top + box.top,
                             box.right, baseY + tile.top + box.bottom
                         )
+                        val positioned = mutableListOf<LineBoxRecovery.Item>()
                         for (element in line.elements) {
                             val bounds = element.boundingBox ?: continue
                             val mid = tile.top + (bounds.top + bounds.bottom) / 2
@@ -64,7 +65,21 @@ object OcrEngine {
                                     element.text, bounds.left, tile.top + bounds.top,
                                     bounds.right, tile.top + bounds.bottom
                                 )
+                                positioned += LineBoxRecovery.Item(
+                                    element.text, bounds.left, bounds.right
+                                )
                             }
+                        }
+                        // Line.text can contain characters which have no Element box.
+                        // Recover their displayed location from the line box, but only
+                        // if the element text really matches the line in order.
+                        for (missing in LineBoxRecovery.recover(
+                            line.text, box.left, box.right, positioned
+                        )) {
+                            pageWords += PixelWord(
+                                missing.text, missing.left, tile.top + box.top,
+                                missing.right, tile.top + box.bottom
+                            )
                         }
                     }
                     pageHeight = maxOf(pageHeight, tile.top + tile.bitmap.height)
