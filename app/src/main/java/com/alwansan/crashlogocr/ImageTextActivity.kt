@@ -116,6 +116,12 @@ class ImageTextActivity : AppCompatActivity() {
                 Toast.makeText(this, R.string.crop_hint, Toast.LENGTH_LONG).show()
         }
         runCrop.setOnClickListener { runCroppedOcr() }
+        val lineToggle = findViewById<MaterialButton>(R.id.lineToggle)
+        lineToggle.setOnClickListener {
+            canvas.setLineMode(!canvas.isLineMode())
+            lineToggle.setText(if (canvas.isLineMode()) R.string.line_selection_mode
+                else R.string.word_selection_mode)
+        }
         val gestureButton = findViewById<MaterialButton>(R.id.gestureMode)
         gestureButton.setOnClickListener {
             val enabled = !canvas.isSelectionMode
@@ -139,6 +145,8 @@ class ImageTextActivity : AppCompatActivity() {
         val page = pages[index]
         cropSelecting = false
         canvas.setSelectionMode(false)
+        canvas.setLineMode(false)
+        findViewById<MaterialButton>(R.id.lineToggle).setText(R.string.word_selection_mode)
         findViewById<MaterialButton>(R.id.gestureMode).setText(R.string.gesture_pan_mode)
         findViewById<MaterialButton>(R.id.runCrop).visibility = View.GONE
         findViewById<MaterialButton>(R.id.cropMode).alpha = 1f
@@ -151,6 +159,7 @@ class ImageTextActivity : AppCompatActivity() {
         next.visibility = if (pages.size > 1) View.VISIBLE else View.GONE
         try {
             canvas.setImage(page.file, page.words)
+            findViewById<MaterialButton>(R.id.lineToggle).isEnabled = canvas.hasLineBoxes()
             if (page.words.isEmpty())
                 Toast.makeText(this, R.string.image_no_word_boxes, Toast.LENGTH_LONG).show()
         } catch (_: Exception) {
