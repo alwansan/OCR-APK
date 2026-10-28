@@ -67,7 +67,8 @@ object ImageOverlayStore {
                     .put("page", w.imageIndex)
                     .put("text", w.text)
                     .put("left", w.left.toDouble()).put("top", w.top.toDouble())
-                    .put("right", w.right.toDouble()).put("bottom", w.bottom.toDouble()))
+                    .put("right", w.right.toDouble()).put("bottom", w.bottom.toDouble())
+                    .put("confidence", w.confidence ?: JSONObject.NULL))
             }
         // Atomic write ensures the image metadata isn't left half-written if OCR is interrupted.
         val tmp = File(folder, "words.json.tmp")
@@ -113,7 +114,8 @@ object ImageOverlayStore {
                 OcrWord(data.getString("text"),
                     data.getDouble("left").toFloat(), data.getDouble("top").toFloat(),
                     data.getDouble("right").toFloat(), data.getDouble("bottom").toFloat(),
-                    data.getInt("page"))
+                    data.getInt("page"),
+                    if (data.isNull("confidence")) null else data.optInt("confidence"))
             }.getOrNull()
             if (w != null && w.valid) words += w
         }
