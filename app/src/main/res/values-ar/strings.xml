@@ -94,4 +94,12 @@
     <string name="ui_language_ar">العربية</string>
     <string name="ui_language_en">English</string>
     <string name="ui_language_desc">هذا الخيار يغير لغة الواجهة فقط. وتگدر تختار لغات التعرف على النصوص بشكل مستقل.</string>
+    <string name="search_selection">بحث عن المحدد</string>
+    <string name="crop_ocr">قص جزء</string>
+    <string name="run_crop_ocr">تعرف على الجزء</string>
+    <string name="uncertain_words">الكلمات المشكوك بها</string>
+    <string name="crop_hint">اسحب مربعاً على الجزء المطلوب، ثم اضغط «تعرف على الجزء».</string>
+    <string name="crop_empty">حدد مساحة أكبر من الصورة.</string>
+    <string name="cropping">جارٍ تجهيز الجزء المحدد…</string>
+    <string name="search_unavailable">ماكو تطبيق متاح للبحث بالويب.</string>
 </resources>
