@@ -1,6 +1,14 @@
 package com.alwansan.crashlogocr
 
 import android.content.Intent
+import android.app.SearchManager
+import android.net.Uri
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.BitmapRegionDecoder
+import android.graphics.Rect
+import java.io.File
+import java.util.concurrent.Executors
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
@@ -25,6 +33,9 @@ class ImageTextActivity : AppCompatActivity() {
     private lateinit var next: MaterialButton
     private var pages = emptyList<ImageOverlayStore.ImagePage>()
     private var currentPage = 0
+    private val cropExecutor = Executors.newSingleThreadExecutor()
+    private var cropSelecting = false
+    private var cropBusy = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +65,7 @@ class ImageTextActivity : AppCompatActivity() {
             previewText.text = if (text.isBlank()) getString(R.string.select_words_hint) else text
             copy.isEnabled = count > 0
             share.isEnabled = count > 0
+            findViewById<MaterialButton>(R.id.searchSelected).isEnabled = count > 0
         }
         findViewById<MaterialButton>(R.id.selectAllWords).setOnClickListener { canvas.selectAll() }
         findViewById<MaterialButton>(R.id.clearSelected).setOnClickListener { canvas.clearSelection() }
@@ -72,6 +84,38 @@ class ImageTextActivity : AppCompatActivity() {
                 putExtra(Intent.EXTRA_TEXT, text)
             }, getString(R.string.share_text)))
         }
+        findViewById<MaterialButton>(R.id.searchSelected).setOnClickListener {
+            val value = canvas.selectedText().trim()
+            if (value.isNotBlank()) {
+                val intent = Intent(Intent.ACTION_WEB_SEARCH)
+                    .putExtra(SearchManager.QUERY, value)
+                try {
+                    startActivity(intent)
+                } catch (_: Exception) {
+                    try {
+                        startActivity(Intent(Intent.ACTION_VIEW,
+                            Uri.parse("https://www.google.com/search?q=" + Uri.encode(value))))
+                    } catch (_: Exception) {
+                        Toast.makeText(this, R.string.search_unavailable, Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
+        val uncertain = findViewById<MaterialButton>(R.id.uncertainWords)
+        uncertain.setOnClickListener { canvas.toggleUncertain() }
+
+        val cropMode = findViewById<MaterialButton>(R.id.cropMode)
+        val runCrop = findViewById<MaterialButton>(R.id.runCrop)
+        cropMode.setOnClickListener {
+            if (cropBusy) return@setOnClickListener
+            cropSelecting = !cropSelecting
+            canvas.setCropMode(cropSelecting)
+            cropMode.alpha = if (cropSelecting) 0.6f else 1f
+            runCrop.visibility = if (cropSelecting) View.VISIBLE else View.GONE
+            if (cropSelecting)
+                Toast.makeText(this, R.string.crop_hint, Toast.LENGTH_LONG).show()
+        }
+        runCrop.setOnClickListener { runCroppedOcr() }
         previous.setOnClickListener { loadPage(currentPage - 1) }
         next.setOnClickListener { loadPage(currentPage + 1) }
         loadPage(savedInstanceState?.getInt("page", 0) ?: 0)
@@ -81,6 +125,11 @@ class ImageTextActivity : AppCompatActivity() {
         if (index !in pages.indices) return
         currentPage = index
         val page = pages[index]
+        cropSelecting = false
+        findViewById<MaterialButton>(R.id.runCrop).visibility = View.GONE
+        findViewById<MaterialButton>(R.id.cropMode).alpha = 1f
+        findViewById<MaterialButton>(R.id.uncertainWords).isEnabled =
+            page.words.any { it.confidence != null }
         pageLabel.text = getString(R.string.image_page_count, index + 1, pages.size)
         previous.isEnabled = index > 0
         next.isEnabled = index < pages.lastIndex
@@ -93,6 +142,70 @@ class ImageTextActivity : AppCompatActivity() {
         } catch (_: Exception) {
             Toast.makeText(this, R.string.read_failed, Toast.LENGTH_LONG).show()
         }
+    }
+
+    private fun runCroppedOcr() {
+        if (cropBusy) return
+        val rectangle = canvas.getCropRect()
+        if (rectangle == null) {
+            Toast.makeText(this, R.string.crop_empty, Toast.LENGTH_SHORT).show()
+            return
+        }
+        cropBusy = true
+        val file = pages[currentPage].file
+        Toast.makeText(this, R.string.cropping, Toast.LENGTH_SHORT).show()
+        cropExecutor.execute {
+            val output = runCatching {
+                val cropFile = File(cacheDir, "ocr_crop_" + System.nanoTime() + ".png")
+                @Suppress("DEPRECATION")
+                val reader = BitmapRegionDecoder.newInstance(file.absolutePath, false)
+                    ?: error("Could not decode source")
+                try {
+                    val rect = Rect(rectangle)
+                    rect.intersect(0, 0, reader.width, reader.height)
+                    require(rect.width() > 31 && rect.height() > 31)
+                    var sample = 1
+                    while (rect.width().toLong() * rect.height() / (sample * sample) > 4_000_000L)
+                        sample *= 2
+                    val bmp = reader.decodeRegion(rect, BitmapFactory.Options().apply {
+                        inSampleSize = sample
+                        inPreferredConfig = Bitmap.Config.RGB_565
+                    }) ?: error("Crop decoding failed")
+                    try {
+                        cropFile.outputStream().use { out ->
+                            check(bmp.compress(Bitmap.CompressFormat.PNG, 100, out))
+                        }
+                    } finally {
+                        bmp.recycle()
+                    }
+                    cropFile
+                } finally {
+                    reader.recycle()
+                }
+            }
+            runOnUiThread {
+                cropBusy = false
+                if (isFinishing || isDestroyed) {
+                    output.getOrNull()?.delete()
+                    return@runOnUiThread
+                }
+                output.onSuccess { cropped ->
+                    cropSelecting = false
+                    canvas.setCropMode(false)
+                    findViewById<MaterialButton>(R.id.runCrop).visibility = View.GONE
+                    findViewById<MaterialButton>(R.id.cropMode).alpha = 1f
+                    OcrFlow.run(this, listOf(Uri.fromFile(cropped))) { cropped.delete() }
+                }.onFailure {
+                    Toast.makeText(this, it.message ?: getString(R.string.read_failed),
+                        Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        cropExecutor.shutdown()
+        super.onDestroy()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
