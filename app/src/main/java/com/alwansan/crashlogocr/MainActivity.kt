@@ -18,6 +18,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.alwansan.crashlogocr.ocr.OcrLanguage
+import com.alwansan.crashlogocr.ocr.OcrLanguagePreferences
+import com.alwansan.crashlogocr.ocr.TessModels
 import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
@@ -119,6 +122,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.menuSettings -> { showSettings(); true }
         R.id.menuUpdate -> { checkUpdates(); true }
+        R.id.menuLanguage -> { showLanguageSettings(); true }
         else -> super.onOptionsItemSelected(item)
     }
 
@@ -130,6 +134,55 @@ class MainActivity : AppCompatActivity() {
             .setMultiChoiceItems(labels, checked) { _, i, on -> if (i == 0) Prefs.setQuickCopy(this, on) }
             .setPositiveButton(android.R.string.ok, null)
             .show()
+    }
+
+    private fun showLanguageSettings() {
+        val languages = OcrLanguage.entries
+        val names = arrayOf(
+            getString(R.string.ocr_language_english),
+            getString(R.string.ocr_language_arabic),
+            getString(R.string.ocr_language_bilingual)
+        )
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.ocr_language_settings)
+            .setMessage(R.string.language_description)
+            .setSingleChoiceItems(names, OcrLanguagePreferences.get(this).ordinal) { dialog, selected ->
+                OcrLanguagePreferences.set(this, languages[selected])
+                dialog.dismiss()
+                Toast.makeText(this, R.string.language_saved, Toast.LENGTH_SHORT).show()
+            }
+            .setNeutralButton(R.string.model_update) { _, _ -> showModelUpdates() }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun showModelUpdates() {
+        val choices = arrayOf(
+            getString(R.string.model_update_arabic),
+            getString(R.string.model_update_english)
+        )
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.model_update)
+            .setItems(choices) { _, chosen ->
+                val lang = if (chosen == 0) "ara" else "eng"
+                val progress = MaterialAlertDialogBuilder(this)
+                    .setMessage(R.string.model_updating).setCancelable(false).show()
+                io.execute {
+                    val result = runCatching { TessModels.refresh(applicationContext, lang) }
+                    runOnUiThread {
+                        if (!isFinishing && !isDestroyed) {
+                            progress.dismiss()
+                            result.onSuccess {
+                                Toast.makeText(this, R.string.model_updated, Toast.LENGTH_LONG).show()
+                            }.onFailure {
+                                MaterialAlertDialogBuilder(this)
+                                    .setMessage(getString(R.string.model_update_failed, it.message ?: "?"))
+                                    .setPositiveButton(android.R.string.ok, null).show()
+                            }
+                        }
+                    }
+                }
+            }.show()
     }
 
     private fun checkUpdates() {
