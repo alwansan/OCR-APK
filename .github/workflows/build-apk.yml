@@ -46,10 +46,11 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-  # A verified, installable APK direct-download link. This does not touch main.
+  # Publish only after the APK and unit tests pass. Main and the legacy
+  # development branch both produce directly installable, test-signed builds.
   publish-prerelease:
     needs: android
-    if: ${{ github.ref == 'refs/heads/feature/v2-8-selectable-text-geometry-paddle-research' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    if: ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/v2-8-selectable-text-geometry-paddle-research') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -72,10 +73,15 @@ jobs:
           test -s "$APK"
           cp "$APK" "release/CrashLogOCR-v2.8.0-debug.apk"
           TAG="v2.8.0-dev.${RUN_NUMBER}"
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            CHANNEL="main"
+          else
+            CHANNEL="feature"
+          fi
           gh release create "$TAG" "release/CrashLogOCR-v2.8.0-debug.apk" \
             --repo "$GH_REPO" \
             --target "$SOURCE_SHA" \
-            --title "CrashLogOCR v2.8.0 (test build #${RUN_NUMBER})" \
-            --notes "Automated test APK. Built only after successful unit tests and Gradle build, from feature branch. Public community test signing key; NOT an authenticated production release." \
+            --title "CrashLogOCR v2.8.0 (${CHANNEL} test build #${RUN_NUMBER})" \
+            --notes "Automated ${CHANNEL} preview APK. Built only after successful unit tests and Gradle build. Public community test signing key; NOT an authenticated production release." \
             --prerelease \
             --latest=false
