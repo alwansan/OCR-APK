@@ -3,7 +3,26 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+// Public TEST-only key. Never use as a trusted production signing certificate.
+val sharedTestKey = file("signing/community-debug.jks")
+if (!sharedTestKey.isFile) {
+    sharedTestKey.parentFile.mkdirs()
+    sharedTestKey.writeBytes(
+        java.util.Base64.getDecoder().decode(
+            file("signing/community-debug.jks.base64").readText().trim()
+        )
+    )
+}
+
 android {
+    signingConfigs {
+        create("communityDebug") {
+            storeFile = sharedTestKey
+            storePassword = "ocr-open-debug"
+            keyAlias = "crashlogocr"
+            keyPassword = "ocr-open-debug"
+        }
+    }
     namespace = "com.alwansan.crashlogocr"
     compileSdk = 35
 
@@ -19,9 +38,11 @@ android {
 
     buildFeatures { buildConfig = true }
 
-    // Debug builds use Android Gradle Plugin's standard debug signing.
-    // Never store release signing keys or passwords in a public repository.
+    // Reproducible public test/debug signing; production key should remain private.
     buildTypes {
+        getByName("debug") {
+            signingConfig = signingConfigs.getByName("communityDebug")
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
