@@ -34,6 +34,18 @@ internal object OcrLineVerifier {
         return true
     }
 
+    /** Approximate the missing Latin leading characters in the actual
+     * line hitbox. Never move more than 15% of the screenshot width.
+     */
+    fun correctedLeft(oldText: String, newText: String,
+                      left: Int, right: Int, imageWidth: Int): Int {
+        if (newText.length <= oldText.length || oldText.isBlank()) return left
+        val estimated = ((right - left).coerceAtLeast(1) *
+            (newText.length - oldText.length).toFloat() / oldText.length).toInt()
+        return (left - estimated.coerceIn(0, (imageWidth * 0.15f).toInt()))
+            .coerceAtLeast(0)
+    }
+
     private fun lcsRatio(a: String, b: String): Float {
         val x = a.take(240)
         val y = b.take(320)
