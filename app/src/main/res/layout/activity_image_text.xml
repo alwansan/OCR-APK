@@ -39,6 +39,11 @@
             android:layout_width="wrap_content" android:layout_height="40dp"
             android:text="@string/gesture_pan_mode"
             android:contentDescription="@string/gesture_pan_description"/>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/lineToggle" style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content" android:layout_height="40dp"
+            android:text="@string/word_selection_mode"
+            android:contentDescription="@string/line_selection_help"/>
         <TextView android:layout_width="0dp" android:layout_weight="1"
             android:layout_height="wrap_content" android:paddingHorizontal="8dp"
             android:text="@string/gesture_help" android:maxLines="2"
