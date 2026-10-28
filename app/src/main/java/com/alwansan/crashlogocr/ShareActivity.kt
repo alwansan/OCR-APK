@@ -41,7 +41,7 @@ class ShareActivity : Activity() {
             result.onSuccess { out ->
                 val clean = if (OcrLanguagePreferences.get(this) != OcrLanguage.ENGLISH &&
                     !Regex("""(?:java\.lang\.|Exception|Error|Caused by:)""").containsMatchIn(out.rawText))
-                    out.rawText else TraceCleaner.clean(out.lines, out.imageWidth)
+                    out.rawText else OcrTailGuard.stripClearlySpuriousSuffix(TraceCleaner.clean(out.lines, out.imageWidth))
                 if (out.rawText.isBlank()) {
                     toast(R.string.empty)
                     busy = false
