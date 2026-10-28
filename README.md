@@ -115,7 +115,7 @@ See `docs/QA-V2.7.md` for checks.
 
 ## v2.8 — visible-text selection and stronger OCR research
 
-A new pixel-based check tries to extend **whole-line** selectable rectangles
+A new pixel-based check tries to extend **whole-line and leading-word** selectable rectangles
 over visibly bright letters when the ML Kit rectangle starts in the middle
 of the word (as in a screenshot where `android.app` is visible but only
 `d.app` becomes highlighted). It does **not** guess missing letters in OCR
