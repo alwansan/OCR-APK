@@ -29,7 +29,7 @@ object OcrFlow {
             result.onSuccess { out ->
                 val language = OcrLanguagePreferences.get(activity)
                 val clean = if (language != OcrLanguage.ENGLISH && !looksLikeCrash(out.rawText))
-                    out.rawText else TraceCleaner.clean(out.lines, out.imageWidth)
+                    out.rawText else OcrTailGuard.stripClearlySpuriousSuffix(TraceCleaner.clean(out.lines, out.imageWidth))
                 if (out.rawText.isBlank()) {
                     dialog.dismiss()
                     Toast.makeText(activity, R.string.empty, Toast.LENGTH_LONG).show()
