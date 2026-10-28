@@ -110,4 +110,8 @@ Pull down to refresh.</string>
     <string name="word_selection_mode">Words</string>
     <string name="line_selection_mode">Whole lines</string>
     <string name="line_selection_help">Select an entire OCR line when individual word boxes are missing</string>
+    <string name="ocr_accuracy_menu">OCR accuracy / speed</string>
+    <string name="ocr_accuracy_fast">Fast — ML Kit only</string>
+    <string name="ocr_accuracy_balanced">Balanced — check suspect code lines (default)</string>
+    <string name="ocr_accuracy_high">High accuracy — check more lines (slower)</string>
 </resources>
