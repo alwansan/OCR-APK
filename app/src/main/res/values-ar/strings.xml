@@ -125,4 +125,5 @@
     <string name="engine_lab_partial">أحد المحركين ما قدر يقرأ الصورة. راجع النتائج.</string>
     <string name="engine_lab_empty">ماكو نص معروف</string>
     <string name="engine_lab_copy">نسخ النتيجة</string>
+    <string name="engine_lab_preview_trimmed">\n…المعاينة مختصرة للأداء؛ نسخ النتيجة ينسخ النص الكامل.</string>
 </resources>
