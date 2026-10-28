@@ -112,3 +112,24 @@ See docs/QA-V2.6.md for manual device checks.
 أضفنا فحصاً ثالثاً باستخدام Tesseract الإنجليزي للسطر البرمجي الواحد فقط عندما تظهر مؤشرات أنه ناقص أو غير واضح. من القائمة تگدر تختار **دقة التعرف وسرعته**: سريع أو متوازن أو دقة عالية. المراجعة محدودة لكل صورة حتى ما تثقل على الهاتف، والتطبيق لا يستبدل كلمات Java بشكل عشوائي. كذلك نسخ الأسطر الكاملة صار يفصل كل سطر بسطر مستقل.
 
 See `docs/QA-V2.7.md` for checks.
+
+## v2.8 — visible-text selection and stronger OCR research
+
+A new pixel-based check tries to extend **whole-line** selectable rectangles
+over visibly bright letters when the ML Kit rectangle starts in the middle
+of the word (as in a screenshot where `android.app` is visible but only
+`d.app` becomes highlighted). It does **not** guess missing letters in OCR
+output. For best coverage, use **Whole lines** when selecting Java frames.
+
+Research and migration plan: [PaddleOCR / RapidOCR / real Android
+MakeACopy implementation](docs/OCR_ENGINE_RESEARCH_V2_8.md).
+**PaddleOCR has not been integrated into the app yet**: the plan requires
+model/runtime selection, on-device benchmark, and Arabic/English regression
+testing. The tested ML Kit/Tesseract path remains the working default.
+
+### العربية
+تمت إضافة معالجة مستقلة عن OCR لموضع بداية السطر في الصور الداكنة عندما
+تظهر أحرف على الصورة لكن مربع تحديد السطر يبدأ من وسط الكلمة. هذه الميزة
+تحسّن مربع **الأسطر كاملة** فقط، ولا تخمّن الحروف المفقودة من النص.
+كذلك بحثنا مشروع MakeACopy الذي يستخدم PaddleOCR على أندرويد فعلياً
+ووضعنا خطة لدمج المحرك بعد قياس الدقة والسرعة.
