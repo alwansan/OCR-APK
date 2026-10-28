@@ -98,15 +98,24 @@ object OcrEngine {
                     for (line in verified) {
                         val middle = tile.top + (line.top + line.bottom) / 2
                         if (middle < tile.ownLo || middle >= tile.ownHi) continue
+                        // ML Kit may place the line/element box in the MIDDLE of
+                        // visible code, e.g. only the 'd.app' part of 'android.app'.
+                        // Independently inspect foreground glyph pixels to enlarge
+                        // the whole-line selection area, without inventing text.
+                        val inkLeft = if (dark && line.text.contains('.'))
+                            ImageLineGeometry.extendLeftOnDark(
+                                tile.bitmap, line.left, line.top, line.right, line.bottom)
+                            else line.left
+                        val visualLine = line.copy(left = inkLeft)
                         lines += OcrLine(
-                            line.text, line.left, baseY + tile.top + line.top,
-                            line.right, baseY + tile.top + line.bottom
+                            visualLine.text, visualLine.left, baseY + tile.top + visualLine.top,
+                            visualLine.right, baseY + tile.top + visualLine.bottom
                         )
                         // Full-line hitbox: users can select an entire recognized stacktrace
                         // line even if the engine fails to provide all Element hitboxes.
-                        pageLines += line.copy(
-                            top = tile.top + line.top,
-                            bottom = tile.top + line.bottom
+                        pageLines += visualLine.copy(
+                            top = tile.top + visualLine.top,
+                            bottom = tile.top + visualLine.bottom
                         )
                         val known = mutableListOf<LineBoxRecovery.Item>()
                         for (element in line.words) {
