@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CrashLogOCR</string>
+    <string name="subtitle">من صورة الخطأ إلى سجل منظم، دون إنترنت</string>
+    <string name="pick_image">اختيار لقطة شاشة</string>
+    <string name="paste_text">لصق النص</string>
+    <string name="clean_again">تنظيف / تنسيق</string>
+    <string name="copy_text">نسخ سجل الخطأ</string>
+    <string name="share_text">مشاركة النص</string>
+    <string name="raw_label">النص المستخرج الأصلي (قابل للتعديل)</string>
+    <string name="clean_label">سجل الخطأ المنظّف (قابل للتعديل)</string>
+    <string name="raw_hint">اختر صورة أو الصق نص الخطأ.</string>
+    <string name="clean_hint">سيظهر النص المستخرج هنا.</string>
+    <string name="idle">جاهز. شارك الصورة إلى هذا التطبيق للنسخ الفوري، أو اخترها من هنا.</string>
+    <string name="recognizing">جارٍ استخراج النص محلياً…</string>
+    <string name="done">تم التعرف على النص. راجعه قبل إرساله لأن OCR قد يخطئ في رموز الكود.</string>
+    <string name="copied">تم نسخ سجل الخطأ</string>
+    <string name="empty">لم يتم العثور على نص. جرّب صورة أوضح.</string>
+    <string name="read_failed">تعذرت قراءة الصورة</string>
+    <string name="clipboard_empty">لا يوجد نص في الحافظة</string>
+    <string name="text_to_share">سجل خطأ</string>
+</resources>

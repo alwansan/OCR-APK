@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CrashLogOCR</string>
+    <string name="subtitle">Screenshot to clean stacktrace, fully offline</string>
+    <string name="pick_image">Choose screenshot</string>
+    <string name="paste_text">Paste text</string>
+    <string name="clean_again">Clean / format</string>
+    <string name="copy_text">Copy cleaned log</string>
+    <string name="share_text">Share text</string>
+    <string name="raw_label">Original OCR text (editable)</string>
+    <string name="clean_label">Cleaned stacktrace (editable)</string>
+    <string name="raw_hint">Select a screenshot or paste an error log.</string>
+    <string name="clean_hint">The extracted stacktrace will appear here.</string>
+    <string name="idle">Ready. Share a screenshot to this app for instant copy, or choose it here.</string>
+    <string name="recognizing">Recognizing text locally…</string>
+    <string name="done">Recognized text. Review before sharing; OCR may misread code characters.</string>
+    <string name="copied">Stacktrace copied to clipboard</string>
+    <string name="empty">No text found. Try a sharper screenshot.</string>
+    <string name="read_failed">Could not read the image</string>
+    <string name="clipboard_empty">Clipboard contains no text</string>
+    <string name="text_to_share">Crash log</string>
+</resources>
