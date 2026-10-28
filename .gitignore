@@ -7,3 +7,10 @@ build/
 .DS_Store
 captures/
 *.apk
+
+# Signing keys are private. Put CI signing material in GitHub Secrets.
+*.jks
+*.keystore
+keystore/
+dist/
+*.zip

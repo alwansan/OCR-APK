@@ -1,112 +1,178 @@
 package com.alwansan.crashlogocr
 
-import android.app.Activity
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
+import android.text.format.DateUtils
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import java.util.concurrent.Executors
 
-class MainActivity : Activity() {
-    private lateinit var rawText: EditText
-    private lateinit var cleanText: EditText
-    private lateinit var status: TextView
+class MainActivity : AppCompatActivity() {
+    private lateinit var historyList: RecyclerView
+    private lateinit var historyEmpty: TextView
+    private lateinit var historyHeader: View
+    private val adapter = HistoryAdapter()
+    private var pendingLatest = false
+    private val io = Executors.newSingleThreadExecutor()
+
+    private val photoPicker = registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(12)) { uris ->
+        if (uris.isNotEmpty()) OcrFlow.run(this, uris)
+    }
+
+    private val filePicker = registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
+        if (uris.isNotEmpty()) OcrFlow.run(this, uris)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        rawText = findViewById(R.id.rawText)
-        cleanText = findViewById(R.id.cleanText)
-        status = findViewById(R.id.status)
+        setSupportActionBar(findViewById<MaterialToolbar>(R.id.toolbar))
 
-        if (savedInstanceState != null) {
-            rawText.setText(savedInstanceState.getString("raw", ""))
-            cleanText.setText(savedInstanceState.getString("clean", ""))
-        }
+        historyList = findViewById(R.id.historyList)
+        historyEmpty = findViewById(R.id.historyEmpty)
+        historyHeader = findViewById(R.id.historyHeader)
+        historyList.layoutManager = LinearLayoutManager(this)
+        historyList.adapter = adapter
+        historyList.isNestedScrollingEnabled = false
 
-        findViewById<Button>(R.id.selectImage).setOnClickListener {
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                addCategory(Intent.CATEGORY_OPENABLE)
-                type = "image/*"
-            }
-            startActivityForResult(intent, PICK_IMAGE)
+        findViewById<MaterialButton>(R.id.btnPhotos).setOnClickListener {
+            photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
-        findViewById<Button>(R.id.pasteText).setOnClickListener {
-            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val text = clipboard.primaryClip?.takeIf { it.itemCount > 0 }
-                ?.getItemAt(0)?.coerceToText(this)?.toString().orEmpty()
-            if (text.isBlank()) {
-                toast(R.string.clipboard_empty)
-            } else {
-                updateResult(text)
-            }
+        findViewById<MaterialButton>(R.id.btnLatest).setOnClickListener { latestScreenshot() }
+        findViewById<MaterialButton>(R.id.btnGallery).setOnClickListener {
+            startActivity(Intent(this, GalleryActivity::class.java))
         }
-        findViewById<Button>(R.id.cleanAgain).setOnClickListener {
-            cleanText.setText(TraceCleaner.clean(rawText.text.toString()))
-        }
-        findViewById<Button>(R.id.copyClean).setOnClickListener {
-            val text = cleanText.text.toString()
-            if (text.isBlank()) {
-                toast(R.string.empty)
-            } else {
-                ClipboardUtils.copy(this, text)
-                toast(R.string.copied)
+        findViewById<MaterialButton>(R.id.btnFiles).setOnClickListener { filePicker.launch(arrayOf("image/*")) }
+        findViewById<MaterialButton>(R.id.btnPaste).setOnClickListener {
+            val text = ClipboardUtils.paste(this)
+            if (text.isBlank()) Toast.makeText(this, R.string.clipboard_empty, Toast.LENGTH_SHORT).show()
+            else {
+                val item = HistoryStore.add(this, text, TraceCleaner.clean(text))
+                startActivity(Intent(this, ResultActivity::class.java).putExtra(ResultActivity.EXTRA_ID, item.id))
             }
         }
-        findViewById<Button>(R.id.shareClean).setOnClickListener {
-            val text = cleanText.text.toString()
-            if (text.isBlank()) {
-                toast(R.string.empty)
-            } else {
-                startActivity(Intent.createChooser(
-                    Intent(Intent.ACTION_SEND).apply {
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, text)
-                    }, getString(R.string.text_to_share)))
+        findViewById<View>(R.id.clearHistory).setOnClickListener {
+            HistoryStore.clear(this); refreshHistory()
+        }
+        if (intent?.action == ACTION_LATEST) latestScreenshot()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (intent.action == ACTION_LATEST) latestScreenshot()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        refreshHistory()
+    }
+
+    private fun refreshHistory() {
+        val items = HistoryStore.all(this)
+        adapter.submit(items)
+        historyEmpty.visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
+        historyHeader.visibility = if (items.isEmpty()) View.GONE else View.VISIBLE
+    }
+
+    private fun latestScreenshot() {
+        if (!MediaAccess.hasAccess(this)) {
+            pendingLatest = true
+            MediaAccess.request(this, REQ_LATEST)
+            return
+        }
+        io.execute {
+            val uri = runCatching { MediaAccess.latestScreenshot(this) }.getOrNull()
+            runOnUiThread {
+                if (uri == null) Toast.makeText(this, R.string.no_screenshot, Toast.LENGTH_LONG).show()
+                else OcrFlow.run(this, listOf(uri))
             }
         }
     }
 
-    private fun updateResult(raw: String) {
-        rawText.setText(raw)
-        cleanText.setText(TraceCleaner.clean(raw))
-        status.setText(if (raw.isBlank()) R.string.empty else R.string.done)
-    }
-
-    @Deprecated("The legacy callback remains compatible with minSdk 23.")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode != PICK_IMAGE || resultCode != RESULT_OK) return
-        val uri: Uri = data?.data ?: return
-        status.setText(R.string.recognizing)
-        OcrEngine.recognize(this, uri) { result ->
-            result.onSuccess { updateResult(it) }
-                .onFailure {
-                    status.setText(R.string.read_failed)
-                    toast(R.string.read_failed)
-                }
+    @Deprecated("Legacy callback keeps minSdk 23 simple")
+    override fun onRequestPermissionsResult(code: Int, perms: Array<out String>, results: IntArray) {
+        super.onRequestPermissionsResult(code, perms, results)
+        if (code == REQ_LATEST && pendingLatest) {
+            pendingLatest = false
+            if (MediaAccess.hasAccess(this)) latestScreenshot()
+            else Toast.makeText(this, R.string.gallery_denied, Toast.LENGTH_LONG).show()
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putString("raw", rawText.text.toString())
-        outState.putString("clean", cleanText.text.toString())
-        super.onSaveInstanceState(outState)
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu); return true
     }
 
-    private fun toast(id: Int) = Toast.makeText(this, id, Toast.LENGTH_SHORT).show()
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+        R.id.menuSettings -> { showSettings(); true }
+        R.id.menuUpdate -> { checkUpdates(); true }
+        else -> super.onOptionsItemSelected(item)
+    }
 
-    companion object { private const val PICK_IMAGE = 1001 }
-}
+    private fun showSettings() {
+        val labels = arrayOf(getString(R.string.setting_quick))
+        val checked = booleanArrayOf(Prefs.quickCopy(this))
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.settings)
+            .setMultiChoiceItems(labels, checked) { _, i, on -> if (i == 0) Prefs.setQuickCopy(this, on) }
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
+    }
 
-internal object ClipboardUtils {
-    fun copy(context: Context, text: String) {
-        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        clipboard.setPrimaryClip(ClipData.newPlainText("CrashLogOCR", text))
+    private fun checkUpdates() {
+        Toast.makeText(this, R.string.checking_updates, Toast.LENGTH_SHORT).show()
+        Updater.check { r ->
+            r.onSuccess { info ->
+                if (info.newer) {
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle(getString(R.string.update_available, info.tag))
+                        .setMessage(R.string.update_message)
+                        .setPositiveButton(R.string.download) { _, _ ->
+                            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(info.apkUrl ?: info.pageUrl)))
+                        }
+                        .setNegativeButton(android.R.string.cancel, null).show()
+                } else Toast.makeText(this, R.string.up_to_date, Toast.LENGTH_LONG).show()
+            }.onFailure {
+                val msg = if (it.message == "no_release") R.string.no_release_yet else R.string.update_failed
+                Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private inner class HistoryAdapter : RecyclerView.Adapter<HistoryAdapter.VH>() {
+        private var items: List<HistoryItem> = emptyList()
+        fun submit(l: List<HistoryItem>) { items = l; notifyDataSetChanged() }
+        inner class VH(v: View) : RecyclerView.ViewHolder(v) {
+            val title: TextView = v.findViewById(R.id.itemTitle)
+            val sub: TextView = v.findViewById(R.id.itemSub)
+        }
+        override fun onCreateViewHolder(p: ViewGroup, t: Int) = VH(layoutInflater.inflate(R.layout.item_history, p, false))
+        override fun getItemCount() = items.size
+        override fun onBindViewHolder(h: VH, i: Int) {
+            val it = items[i]
+            h.title.text = it.title
+            h.sub.text = DateUtils.getRelativeTimeSpanString(it.id, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS)
+            h.itemView.setOnClickListener { _ ->
+                startActivity(Intent(this@MainActivity, ResultActivity::class.java).putExtra(ResultActivity.EXTRA_ID, it.id))
+            }
+        }
+    }
+
+    companion object {
+        const val ACTION_LATEST = "com.alwansan.crashlogocr.LATEST"
+        private const val REQ_LATEST = 55
     }
 }

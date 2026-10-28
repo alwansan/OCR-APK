@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="surface_light">#0F141B</color>
+    <color name="code_bg_light">#151B24</color>
+    <color name="code_fg_light">#E3E8EF</color>
+</resources>

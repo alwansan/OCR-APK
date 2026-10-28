@@ -1,65 +1,42 @@
-# CrashLogOCR 📋
+# CrashLogOCR 2.1 — Android crash screenshot OCR
 
-**EN** · [العربية](#العربية)
+[العربية أدناه](#العربية) · [CI build](https://github.com/alwansan/OCR-APK/actions)
 
-CrashLogOCR is a tiny Android utility that extracts **Java / Android crash logs and stacktraces from screenshots**, removes common crash-dialog UI noise, repairs some OCR line wrapping, and copies the result.
-
-## Why this app?
-
-Screenshots of crash dialogs (including Arabic/RTL Android skins) often wrap English package names, stack frames and file paths across multiple lines. Standard image-to-text apps copy all the UI clutter too. CrashLogOCR focuses on developer logs such as:
-
-```text
-java.lang.NoClassDefFoundError: Failed resolution of: Lcom/shabakaty/downloader/j32;
-    at com.shabakaty.cinemana.CinemanaApplication.attachBaseContext(CinemanaApplication.kt:2)
-Caused by: java.lang.ClassNotFoundException: com.shabakaty.downloader.j32
-    ... 15 more
-```
+An offline-first Android screenshot OCR tool for Java/Kotlin stacktraces. Based on the original CrashLogOCR v1 and the supplied Claude Code v2 prototype, with security, gallery access, and build improvements.
 
 ## Features
 
-- **Share → copy**: Share a screenshot from Gallery or the screenshot share menu to CrashLogOCR. A transparent activity runs local OCR, cleans the trace, copies it and closes.
-- **Review mode**: Launch the app normally, choose an image or paste text, compare **original OCR** with **cleaned output**, edit, copy or share.
-- **Offline recognition**: Google ML Kit Latin text-recognition model is bundled with the APK. No server/API key, no network permission.
-- **Privacy**: The app does not upload screenshots or keep a history. Android's clipboard is controlled by the operating system and may be readable by other apps depending on device/version.
-- **No media permission**: Uses Android's system document picker and temporary share URI access.
-- **English and Arabic UI** selected automatically from your phone language.
+- **Choose from Photos** on the home screen using the Android system photo picker (no storage permission). Multiple images, up to 12.
+- **Browse screenshots** through a built-in MediaStore gallery (optional photo permission; supports Android 14 partial media access) and quick access to the latest screenshot.
+- **Open files** via Android's document picker (including Downloads and cloud providers).
+- **Long screenshots** processed in overlapping tiles using a region decoder to reduce memory use and avoid shrinking small text into unreadability. OCR works entirely on device with the bundled ML Kit Latin model.
+- **Stacktrace-specific cleaner**: strip dialog buttons, normalize line breaks and indented frames, handle some RTL effects. Keeps raw OCR alongside cleaned text. Never assume identifiers are correct without manual review.
+- **Results review**: syntax highlights, root-cause summary, full/compact/raw tabs, code wrapping, edit, copy, Markdown copy, share.
+- **Local history**: up to 30 recent results stored in app-private preferences, with individual delete and clear-all. Logs may contain sensitive information; clear history when no longer needed. Android backup is disabled.
+- **Manual update checker**: HTTPS GitHub Releases latest endpoint, only accessed after user taps Check for updates. No screenshot uploads. App version update checks are NOT ML Kit runtime library updates.
+- **Dependencies**: GitHub Dependabot PRs for Gradle and Actions dependencies. The bundled OCR engine requires a new APK and rebuild to update.
 
-## Build / install
+## Build
 
-1. Go to **[GitHub Actions](https://github.com/alwansan/OCR-APK/actions/workflows/build-apk.yml)**.
-2. Open the most recent **Build Android APK** run, wait for a green checkmark.
-3. Download **CrashLogOCR-debug-apk** under **Artifacts**, unzip, and install `app-debug.apk`.
-4. Or open the repository in Android Studio (AGP 8.9.2 / Gradle 8.11.1 / JDK 17 / SDK 35).
+GitHub Actions produces **debug APK** on feature branches/PRs and main. Open a successful run's Artifacts. Built with Gradle 8.11.1, JDK 17, Android SDK 35. Debug builds use per-run developer debug signing; installing over older builds with different signatures may require uninstalling the old APK. **Back up / copy logs before uninstalling, because history is app-private.**
 
-CI uses a pinned Gradle distribution through `gradle/actions/setup-gradle`; a Gradle wrapper JAR is not included.
+The attached Claude v2 prototype contained a JKS signing key plus passwords in source. They are deliberately **excluded**, and this project does not ship any production signing credentials. For seamless upgrades, configure a dedicated private release key as GitHub Actions secrets with a reviewed signing workflow; never commit it to the repository.
 
-## Limitations and safety
+## Notes
 
-OCR is probabilistic: dots, case, slash/semicolon and class names may be wrong. Auto-repair is conservative; **always verify technical identifiers in the original screenshot** when diagnosing bugs. Input must be an image, not another app's protected runtime data. The scanner is designed mainly for Latin-script stacktraces, not Arabic prose recognition. Very long screenshots or damaged images can fail due to device memory; try a crop or clearer source. Android may show a system clipboard notification after copying.
-
-## Project layout
-
-- `app/src/main/java/.../OcrEngine.kt` — bundled ML Kit recognizer
-- `TraceCleaner.kt` — deterministic stacktrace heuristics (no generative guesses)
-- `ShareActivity.kt` — transparent Android share target
-- `MainActivity.kt` — select / paste / review / edit / copy
-- `TraceCleanerTest.kt` — regression samples
-- `.github/workflows/build-apk.yml` — tests and APK artifact
+- OCR is fallible for tiny punctuation and obfuscated class names (e.g. `j32`, `ca1`). Review raw and cleaned text before debugging.
+- Gallery permission is only requested for the optional **in-app MediaStore gallery/latest screenshot** feature. The main **Choose from Photos** flow needs no media permission and reaches albums made available by Android's picker.
+- Only Latin text recognition is bundled; Arabic UI buttons are filtered by cleanup rules, not OCR of Arabic script.
+- Some extreme rotated panoramas may still be limited by Android bitmap memory; screenshots with normal EXIF orientation use efficient region decoding.
 
 ## العربية
 
-**CrashLogOCR** تطبيق أندرويد مجاني ومفتوح المصدر لاستخراج سجلات انهيار التطبيقات من صور الشاشة، خصوصاً عندما تكون واجهة الجهاز عربية ويتقطع النص الإنجليزي بين الأسطر.
+التطبيق يستخرج سجل انهيار برامج أندرويد من لقطات الشاشة حتى الطويلة، ثم يعرض النص الأصلي والمنظّم للمراجعة.
 
-**طريقتان للاستخدام:**
-1. التقط صورة للخطأ ← مشاركة ← CrashLogOCR ← يُنسخ السجل المنظّف تلقائياً ويُغلق التطبيق.
-2. افتح التطبيق ← اختر الصورة أو الصق النص ← راجع النص الأصلي والمنظّف ← عدّل وانسخ أو شارك.
+**اختر من معرض الصور مباشرة** عبر زر «اختيار من معرض الصور» دون طلب صلاحية الوصول لكل صور الهاتف. يوجد أيضاً معرض داخلي اختياري بلقطات الشاشة، يطلب إذن الصور، وقائمة الملفات لتصفح التنزيلات.
 
-يعمل التعرف على النص محلياً حتى دون إنترنت، ولا يحتاج صلاحية الصور أو الإنترنت. لا توجد مزامنة أو سجل محفوظ. **تحقق من أسماء الكلاسات والأسطر دائماً** لأن أخطاء OCR قد تغيّر حرفاً مؤثراً في التشخيص.
+**نسخ ومشاركة** النص كاملاً أو مختصراً أو ككتلة Markdown، مع تمييز سطور الخطأ والإطارات وإمكانية التعديل وسجل محلي للنتائج.
 
-**تنزيل APK:** افتح [Actions](https://github.com/alwansan/OCR-APK/actions/workflows/build-apk.yml)، اختر تشغيل البناء الناجح، ثم نزّل الملف `CrashLogOCR-debug-apk` من Artifacts وفك الضغط وثبّته.
+**التحديثات:** زر فحص التحديثات يبحث عن إصدار تطبيق جديد على GitHub Releases فقط. مكتبة OCR المدمجة تتحدث عبر Dependabot وإصدار APK جديد، ولا يتم تحميل كود تنفيذي تلقائياً من الإنترنت.
 
-## Credits / sources
-
-- [Google ML Kit text recognition v2](https://developers.google.com/ml-kit/vision/text-recognition/v2/android)
-- [Android secure image-sharing patterns](https://developer.android.com/training/sharing/receive)
-- [GitHub Actions](https://docs.github.com/en/actions)
+**الخصوصية:** OCR محلي؛ فقط فحص التحديثات يستخدم الإنترنت عند الطلب. السجلات محفوظة على الجهاز ويُفضل حذفها بعد الانتهاء. ملف التوقيع الأصلي الذي وصل داخل ZIP غير مدرج في المستودع لأسباب أمنية.

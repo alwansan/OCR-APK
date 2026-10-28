@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.alwansan.crashlogocr.SquareFrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:padding="2dp" android:clickable="true" android:focusable="true">
+    <ImageView android:id="@+id/thumb" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:scaleType="centerCrop"
+        android:background="#22808080" android:contentDescription="@null"/>
+    <View android:id="@+id/dim" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:background="#661F5BFF" android:visibility="gone"/>
+    <TextView android:id="@+id/check" android:layout_width="26dp" android:layout_height="26dp"
+        android:layout_gravity="top|end" android:layout_margin="6dp" android:gravity="center"
+        android:text="✓" android:textColor="#FFFFFF" android:textStyle="bold"
+        android:background="@drawable/bg_check" android:visibility="gone"/>
+</com.alwansan.crashlogocr.SquareFrameLayout>
