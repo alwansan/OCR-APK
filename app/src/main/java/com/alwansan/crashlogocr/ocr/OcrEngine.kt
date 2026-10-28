@@ -44,6 +44,39 @@ object OcrEngine {
         }
     }
 
+    /** Diagnostic only: run independent, full OCR backends over the EXACT same
+     * source URI. No scripts are sent to any service and results aren't saved.
+     * This is engine comparison, not an accuracy score without ground truth.
+     */
+    data class EngineSample(val name: String, val output: OcrOutput?, val durationMs: Long,
+                            val error: String? = null)
+    fun compareEngines(context: Context, uri: Uri,
+                       onResult: (List<EngineSample>) -> Unit) {
+        val app = context.applicationContext
+        worker.execute {
+            val results = mutableListOf<EngineSample>()
+            fun sample(name: String, operation: () -> OcrOutput) {
+                val start = android.os.SystemClock.elapsedRealtime()
+                val attempt = runCatching { operation() }
+                results.add(EngineSample(name, attempt.getOrNull(),
+                    android.os.SystemClock.elapsedRealtime() - start,
+                    attempt.exceptionOrNull()?.localizedMessage))
+            }
+            sample("ML Kit Latin") { recognizeLatin(app, listOf(uri)) }
+            // Use a *genuinely separate* OCR implementation. On English-only
+            // setting this is English Tesseract, not a duplicate ML Kit pass.
+            val tessLang = when (OcrLanguagePreferences.get(app)) {
+                OcrLanguage.ARABIC -> OcrLanguage.ARABIC
+                OcrLanguage.BILINGUAL -> OcrLanguage.BILINGUAL
+                OcrLanguage.ENGLISH -> OcrLanguage.ENGLISH
+            }
+            sample("Tesseract (" + tessLang.tessCode + ")") {
+                TesseractEngine.recognize(app, listOf(uri), tessLang)
+            }
+            main.post { onResult(results.toList()) }
+        }
+    }
+
     private fun recognizeBlocking(context: Context, uris: List<Uri>): OcrOutput {
         val language = OcrLanguagePreferences.get(context)
         if (language == OcrLanguage.ARABIC)
