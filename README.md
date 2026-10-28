@@ -97,3 +97,18 @@ A new **original image** card appears at the top of OCR results for screenshots 
 نسخة 2.6 تضيف محاولة OCR ثانية للصورة ذات الخلفية الداكنة أو النص الصغير، مع تحسين التباين ودمج النتائج بشكل محافظ. تضيف تحديد **الأسطر كاملة** حتى تكدر تنسخ إطار Java كامل إذا مربعات الكلمات ناقصة. الوضع المختلط يختار ML Kit لسجلات Java الواضحة بدلاً من الاعتماد على Tesseract لكل نص. استخدم الصورة الأصلية بدقة كاملة كلما أمكن؛ تكبير صورة مضغوطة ما يرجع تفاصيل الحروف المفقودة.
 
 See docs/QA-V2.6.md for manual device checks.
+
+## v2.7 — Independent OCR checks for missing characters
+
+- Added *third-pass*, fully-offline Tesseract English `PSM_SINGLE_LINE` verification on Java stack frames that ML Kit has low confidence in or appears to have truncated.
+- Every candidate is compared conservatively with the original OCR reading before replacing it; guesses about class names and silently substituting unrelated text are deliberately avoided.
+- Home menu → **OCR accuracy / speed**: Fast, Balanced (default), High accuracy. Verification is capped per page to protect CPU/RAM on long screenshots.
+- Source image still uses accurate full-line boxes and separate word selection. Whole-line copy now inserts newlines and shows a line count.
+- The existing public debug signing key and automatic APK prerelease pipeline remain unchanged. The feature is developed separately from `main`.
+- Note: for best quality, scan the uncompressed original screenshot using Gallery.
+
+### العربية
+
+أضفنا فحصاً ثالثاً باستخدام Tesseract الإنجليزي للسطر البرمجي الواحد فقط عندما تظهر مؤشرات أنه ناقص أو غير واضح. من القائمة تگدر تختار **دقة التعرف وسرعته**: سريع أو متوازن أو دقة عالية. المراجعة محدودة لكل صورة حتى ما تثقل على الهاتف، والتطبيق لا يستبدل كلمات Java بشكل عشوائي. كذلك نسخ الأسطر الكاملة صار يفصل كل سطر بسطر مستقل.
+
+See `docs/QA-V2.7.md` for checks.
