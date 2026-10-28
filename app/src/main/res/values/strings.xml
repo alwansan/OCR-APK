@@ -102,4 +102,9 @@ Pull down to refresh.</string>
     <string name="crop_empty">Select a larger image area first.</string>
     <string name="cropping">Preparing cropped image…</string>
     <string name="search_unavailable">No app can open web search.</string>
+    <string name="gesture_pan_mode">Move image</string>
+    <string name="gesture_select_mode">Select range</string>
+    <string name="gesture_pan_description">Move and scroll the image freely</string>
+    <string name="gesture_select_description">Drag from one word to another to select a range</string>
+    <string name="gesture_help">Drag to move • Tap a word • Long-press to select • Use the right scrollbar to jump</string>
 </resources>
