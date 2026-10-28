@@ -114,4 +114,5 @@
     <string name="ocr_accuracy_fast">سريع — ML Kit فقط</string>
     <string name="ocr_accuracy_balanced">متوازن — مراجعة أسطر الكود المشكوك بها (افتراضي)</string>
     <string name="ocr_accuracy_high">دقة عالية — مراجعة أسطر أكثر (أبطأ)</string>
+    <string name="selected_line_count">تم تحديد %1$d سطر</string>
 </resources>
