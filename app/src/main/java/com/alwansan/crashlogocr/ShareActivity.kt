@@ -9,14 +9,12 @@ import android.widget.Toast
 import com.alwansan.crashlogocr.ocr.OcrEngine
 import com.alwansan.crashlogocr.ocr.OcrLanguage
 import com.alwansan.crashlogocr.ocr.OcrLanguagePreferences
+import java.util.concurrent.Executors
 
-/**
- * Transparent share target. Quick mode: OCR -> clean -> copy -> close.
- * If no real error was detected (or quick mode is off) the review screen opens instead,
- * so a bad scan is never silently copied.
- */
+/** Transparent share target: quick-copy, but always persist the shared screenshot for image selection later. */
 class ShareActivity : Activity() {
     private var busy = false
+    private val imageIo = Executors.newSingleThreadExecutor()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,32 +33,47 @@ class ShareActivity : Activity() {
             src.getStringExtra(Intent.EXTRA_TEXT) else null
         if (sharedText != null) { finishWithText(sharedText); return }
 
-        val uris = extractUris(src)
+        val uris = extractUris(src).take(12)
         if (uris.isEmpty()) { toast(R.string.read_failed); finish(); return }
         busy = true
         toast(R.string.recognizing)
-        OcrEngine.recognize(this, uris.take(12)) { result ->
+        OcrEngine.recognize(this, uris) { result ->
             result.onSuccess { out ->
                 val clean = if (OcrLanguagePreferences.get(this) != OcrLanguage.ENGLISH &&
                     !Regex("""(?:java\.lang\.|Exception|Error|Caused by:)""").containsMatchIn(out.rawText))
                     out.rawText else TraceCleaner.clean(out.lines, out.imageWidth)
                 if (out.rawText.isBlank()) {
                     toast(R.string.empty)
-                } else {
-                    val item = HistoryStore.add(this, out.rawText, clean)
-                    val ok = TraceAnalyzer.analyze(clean)
-                    if (Prefs.quickCopy(this) && ok.hasError) {
-                        ClipboardUtils.copy(this, clean)
-                        Toast.makeText(this, getString(R.string.copied_n, ok.lineCount), Toast.LENGTH_SHORT).show()
-                    } else {
-                        startActivity(Intent(this, ResultActivity::class.java)
-                            .putExtra(ResultActivity.EXTRA_ID, item.id)
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                    busy = false
+                    finish()
+                    return@onSuccess
+                }
+                val item = HistoryStore.add(this, out.rawText, clean)
+                val quick = Prefs.quickCopy(this) && TraceAnalyzer.analyze(clean).hasError
+                imageIo.execute {
+                    runCatching { ImageOverlayStore.save(applicationContext, item.id, uris, out.words) }
+                    runOnUiThread {
+                        if (!isFinishing && !isDestroyed) {
+                            if (quick) {
+                                ClipboardUtils.copy(this, clean)
+                                Toast.makeText(this, getString(R.string.copied_n, clean.lines().size),
+                                    Toast.LENGTH_SHORT).show()
+                            } else {
+                                startActivity(Intent(this, ResultActivity::class.java)
+                                    .putExtra(ResultActivity.EXTRA_ID, item.id)
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                            }
+                        }
+                        busy = false
+                        finish()
                     }
                 }
-            }.onFailure { Toast.makeText(this, it.localizedMessage ?: getString(R.string.read_failed), Toast.LENGTH_LONG).show() }
-            busy = false
-            finish()
+            }.onFailure {
+                Toast.makeText(this, it.localizedMessage ?: getString(R.string.read_failed),
+                    Toast.LENGTH_LONG).show()
+                busy = false
+                finish()
+            }
         }
     }
 
