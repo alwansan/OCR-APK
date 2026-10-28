@@ -28,6 +28,9 @@ object OcrEngine {
     }
 
     private fun recognizeBlocking(context: Context, uris: List<Uri>): OcrOutput {
+        if (OcrLanguagePreferences.get(context) != OcrLanguage.ENGLISH) {
+            return TesseractEngine.recognize(context, uris, OcrLanguagePreferences.get(context))
+        }
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
         try {
             val all = mutableListOf<OcrLine>()
