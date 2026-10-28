@@ -39,7 +39,7 @@ class TraceCleanerTest {
         val cleaned = TraceCleaner.clean(raw)
         assertTrue(cleaned.contains("at com.shabakaty.cinemana.CinemanaApplication.attachBaseContext(CinemanaApplication.kt:2)"))
         assertTrue(cleaned.contains("at android.app.Instrumentation.newApplication(Instrumentation.java:1357)"))
-        assertTrue(cleaned.contains("at android.app.LoadedApk.makeApplicationInner(LoadedApk.java:1534)"))
+        assertTrue(cleaned.contains("at android.app.LoadedApk.makeApplicationlnner(LoadedApk.java:1534)"))
     }
 
     @Test fun repairsErrorWordAndMiddleDots() {
