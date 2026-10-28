@@ -82,3 +82,18 @@ A new **original image** card appears at the top of OCR results for screenshots 
 من صفحة النتيجة اضغط على مربع **«عرض النص على الصورة الأصلية»**. راح تنفتح الصورة كاملة وتظهر الكلمات المحددة تلقائياً. اضغط على أي كلمة أو اسحب على عدة كلمات حتى تحددها، وتكدر تستخدم **تحديد الكل / إلغاء التحديد / نسخ المحدد / مشاركة**. للتكبير استخدم إصبعين، وللتحريك اسحب على المساحة الخالية، وزر **ملاءمة** يرجع الصورة لحجمها المناسب. ماكو كيبورد نهائياً داخل هذا العارض.
 
 **ملاحظة:** الاستجابة الفعلية للصور الطولية جداً ودقة مواضع الكلمات تحتاج اختبار على أجهزة حقيقية؛ نجاح بناء GitHub Actions وحده لا يثبت أداء اللمس والـ OCR في كل الصور. راجع `docs/LIVE-TEXT-IMAGE.md`.
+
+## v2.6 — Higher OCR accuracy for crash screenshots
+
+- The OCR engine now uses a second contrast-adjusted reading on dark or very narrow screenshots. It merges hypotheses conservatively by position and textual similarity rather than always taking the longer output.
+- Android screenshot pixels are preserved without arbitrary downscaling up to 3200 px width. Very small screenshots are magnified up to 3x using region tiles limited to approximately 4 megapixels per pass.
+- In auto Arabic+English OCR mode, recognizable Java crash traces use the improved ML Kit Latin pipeline; Arabic and ordinary bilingual documents continue to use Tesseract.
+- Image text selector has a **Words / Whole lines** toggle for Java traces. Full-line selectable boxes are sourced from ML Kit's actual line geometry and help when individual word-element boxes are incomplete.
+- Old scans retain their saved geometry; rescan an image to apply the new OCR pipeline.
+- No network OCR and no text hallucination/correction of unknown class names. Some extremely blurry/compressed text cannot be recovered.
+
+### العربية
+
+نسخة 2.6 تضيف محاولة OCR ثانية للصورة ذات الخلفية الداكنة أو النص الصغير، مع تحسين التباين ودمج النتائج بشكل محافظ. تضيف تحديد **الأسطر كاملة** حتى تكدر تنسخ إطار Java كامل إذا مربعات الكلمات ناقصة. الوضع المختلط يختار ML Kit لسجلات Java الواضحة بدلاً من الاعتماد على Tesseract لكل نص. استخدم الصورة الأصلية بدقة كاملة كلما أمكن؛ تكبير صورة مضغوطة ما يرجع تفاصيل الحروف المفقودة.
+
+See docs/QA-V2.6.md for manual device checks.
