@@ -1,9 +1,14 @@
-name: Build Android APK
+name: Build CrashLogOCR APK
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'feature/**']
   pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -12,7 +17,7 @@ permissions:
 jobs:
   android:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -21,21 +26,56 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Install Android SDK 35 (runner SDK tools)
+      - name: Install Android SDK 35
+        shell: bash
         run: |
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -maxdepth 3 -type f -name sdkmanager | sort -V | tail -n 1)"
-          test -n "$SDKMANAGER"
+          test -x "$SDKMANAGER"
           "$SDKMANAGER" --install "platforms;android-35" "build-tools;35.0.0"
-      - name: Set up Gradle 8.11.1
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
-      - name: Unit tests and debug APK
-        run: gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug
-      - name: Upload installable APK
+      - name: Run unit tests and build APK
+        run: gradle --no-daemon -PciBuildNumber="$GITHUB_RUN_NUMBER" :app:testDebugUnitTest :app:assembleDebug
+      - name: Upload installable debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: CrashLogOCR-debug-apk
+          name: CrashLogOCR-v2.8.0-debug
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
+
+  # A verified, installable APK direct-download link. This does not touch main.
+  publish-prerelease:
+    needs: android
+    if: ${{ github.ref == 'refs/heads/feature/v2-8-selectable-text-geometry-paddle-research' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download tested APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: CrashLogOCR-v2.8.0-debug
+          path: release
+      - name: Publish verified prerelease with direct APK file
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          SOURCE_SHA: ${{ github.sha }}
+          RUN_NUMBER: ${{ github.run_number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="release/app-debug.apk"
+          test -s "$APK"
+          cp "$APK" "release/CrashLogOCR-v2.8.0-debug.apk"
+          TAG="v2.8.0-dev.${RUN_NUMBER}"
+          gh release create "$TAG" "release/CrashLogOCR-v2.8.0-debug.apk" \
+            --repo "$GH_REPO" \
+            --target "$SOURCE_SHA" \
+            --title "CrashLogOCR v2.8.0 (test build #${RUN_NUMBER})" \
+            --notes "Automated test APK. Built only after successful unit tests and Gradle build, from feature branch. Public community test signing key; NOT an authenticated production release." \
+            --prerelease \
+            --latest=false

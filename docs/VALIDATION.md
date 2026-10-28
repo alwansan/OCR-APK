@@ -44,3 +44,6 @@ Expected cleaned frame on a **new line**, with `at ` and the method name joined.
 6. Confirm no storage or Internet runtime permission is requested.
 
 **Reminder:** automated unit tests validate the formatter, not ML Kit's recognition quality on every image/device.
+
+## v2 notes
+Unit tests cover wrapped frames after a standalone `at`, I/l repair of framework names, RTL-reversed `more 15 …`, middle dots, geometry-based space/glue decisions. Real-phone accuracy on the six reference screenshots still needs a manual run.

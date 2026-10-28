@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.CrashLogOCR" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">#8FB0FF</item>
+        <item name="colorOnPrimary">#06163F</item>
+        <item name="android:windowBackground">@color/surface_light</item>
+        <item name="android:statusBarColor">@color/surface_light</item>
+        <item name="android:navigationBarColor">@color/surface_light</item>
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.Material3.Corner.Large</item>
+    </style>
+</resources>
