@@ -118,10 +118,17 @@ object OcrEngine {
                             bottom = tile.top + visualLine.bottom
                         )
                         val known = mutableListOf<LineBoxRecovery.Item>()
+                        val leadingElement = line.words.minByOrNull { it.left }
                         for (element in line.words) {
                             val wordMiddle = tile.top + (element.top + element.bottom) / 2
                             if (wordMiddle !in tile.ownLo until tile.ownHi) continue
+                            // Also cover the visually present prefix in WORD mode.
+                            // This is a hitbox correction only; text still comes
+                            // from the OCR engine and must not be invented.
+                            val inkWordLeft = if (element === leadingElement &&
+                                line.text.contains('.') && dark) inkLeft else element.left
                             pageWords += element.copy(
+                                left = minOf(element.left, inkWordLeft),
                                 top = tile.top + element.top,
                                 bottom = tile.top + element.bottom
                             )
@@ -130,7 +137,7 @@ object OcrEngine {
                             )
                         }
                         for (gap in LineBoxRecovery.recover(
-                            line.text, line.left, line.right, known
+                            line.text, visualLine.left, line.right, known
                         )) pageWords += OcrPassFusion.Word(
                             gap.text, gap.left, tile.top + line.top,
                             gap.right, tile.top + line.bottom
