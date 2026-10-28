@@ -115,4 +115,14 @@
     <string name="ocr_accuracy_balanced">متوازن — مراجعة أسطر الكود المشكوك بها (افتراضي)</string>
     <string name="ocr_accuracy_high">دقة عالية — مراجعة أسطر أكثر (أبطأ)</string>
     <string name="selected_line_count">تم تحديد %1$d سطر</string>
+    <string name="engine_lab_title">مختبر محركات OCR</string>
+    <string name="engine_lab_help">قارن نفس الصورة الأصلية باستخدام ML Kit وTesseract بدون إنترنت. تطابق الأسطر مو مقياس دقة حقيقي بدون نص مرجعي. تجربة PaddleOCR راح تكون منفصلة.</string>
+    <string name="engine_lab_pick">اختر صورة واحدة للمقارنة</string>
+    <string name="engine_lab_idle">اختر لقطة الشاشة الأصلية للبدء.</string>
+    <string name="engine_lab_working">جارٍ استخراج النص بالمحركين…</string>
+    <string name="engine_lab_finished">اكتملت محاولتا التعرف</string>
+    <string name="engine_lab_comparison">أسطر متطابقة: %1$d · فقط ML Kit: %2$d · فقط Tesseract: %3$d</string>
+    <string name="engine_lab_partial">أحد المحركين ما قدر يقرأ الصورة. راجع النتائج.</string>
+    <string name="engine_lab_empty">ماكو نص معروف</string>
+    <string name="engine_lab_copy">نسخ النتيجة</string>
 </resources>
