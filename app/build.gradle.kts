@@ -103,3 +103,7 @@ val prepareOcrModels = tasks.register("prepareOcrModels") {
     }
 }
 tasks.named("preBuild") { dependsOn(prepareOcrModels) }
+// Force assets to be prepared BEFORE their consuming task, even in parallel Gradle builds.
+tasks.configureEach {
+    if (name.startsWith("merge") && name.endsWith("Assets")) dependsOn(prepareOcrModels)
+}
