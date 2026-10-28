@@ -34,8 +34,10 @@ android {
         applicationId = "com.alwansan.crashlogocr"
         minSdk = 23
         targetSdk = 34
-        versionCode = 6
-        versionName = "2.4.0"
+        // GitHub CI builds use monotonically increasing codes so later signed APKs update in place.
+        val ciBuild = providers.gradleProperty("ciBuildNumber").orNull?.toIntOrNull()
+        versionCode = 24000 + (ciBuild ?: 0)
+        versionName = if (ciBuild == null) "2.4.0" else "2.4.0-dev.$ciBuild"
         // Only real phones: drops x86 libs from the bundled ML Kit model => smaller APK.
         ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
     }
