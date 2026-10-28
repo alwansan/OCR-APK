@@ -23,6 +23,9 @@ class EngineLabActivity : AppCompatActivity() {
     private lateinit var secondName: TextView
     private lateinit var firstText: TextView
     private lateinit var secondText: TextView
+    private lateinit var diffView: TextView
+    private lateinit var diffCopy: MaterialButton
+    private var diffReport = ""
     private lateinit var firstCopy: MaterialButton
     private lateinit var secondCopy: MaterialButton
     private var busy = false
@@ -39,6 +42,9 @@ class EngineLabActivity : AppCompatActivity() {
             agreement.text = ""
             firstRaw = ""
             secondRaw = ""
+            diffReport = ""
+            diffCopy.isEnabled = false
+            diffView.text = ""
             firstText.text = ""
             secondText.text = ""
             OcrEngine.compareEngines(this, uri) { results ->
@@ -63,11 +69,32 @@ class EngineLabActivity : AppCompatActivity() {
                         first.output.rawText, second.output.rawText)
                     agreement.text = getString(R.string.engine_lab_comparison,
                         diff.commonLines, diff.onlyFirst.size, diff.onlySecond.size)
+                    diffReport = formatDifferenceReport(diff)
+                    diffView.text = diffReport
+                    diffCopy.isEnabled = true
                 } else {
                     agreement.setText(R.string.engine_lab_partial)
                 }
             }
         }
+    }
+
+    private fun formatDifferenceReport(diff: EngineComparison.Differences): String {
+        if (diff.onlyFirst.isEmpty() && diff.onlySecond.isEmpty()) {
+            return getString(R.string.engine_lab_no_diff)
+        }
+        val maxLines = 18
+        fun section(title: String, lines: List<String>): String {
+            if (lines.isEmpty()) return ""
+            val display = lines.take(maxLines).joinToString("\n")
+            val suffix = if (lines.size > maxLines)
+                "\n" + getString(R.string.engine_lab_diff_trim) else ""
+            return "$title:\n$display$suffix"
+        }
+        return listOf(
+            section(getString(R.string.engine_lab_only_first), diff.onlyFirst),
+            section(getString(R.string.engine_lab_only_second), diff.onlySecond)
+        ).filter { it.isNotEmpty() }.joinToString("\n\n")
     }
 
     private fun preview(text: String): String = if (text.length <= 45_000) text
@@ -86,6 +113,15 @@ class EngineLabActivity : AppCompatActivity() {
         agreement = findViewById(R.id.labAgreement)
         firstName = findViewById(R.id.labFirstName)
         secondName = findViewById(R.id.labSecondName)
+        diffView = findViewById(R.id.labDiffs)
+        diffCopy = findViewById(R.id.labCopyDiff)
+        diffCopy.isEnabled = false
+        diffCopy.setOnClickListener {
+            if (diffReport.isNotEmpty()) {
+                ClipboardUtils.copy(this, diffReport)
+                Toast.makeText(this, R.string.copied, Toast.LENGTH_SHORT).show()
+            }
+        }
         firstText = findViewById(R.id.labFirstText)
         secondText = findViewById(R.id.labSecondText)
         firstCopy = findViewById(R.id.labCopyFirst)
