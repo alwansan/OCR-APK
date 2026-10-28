@@ -14,6 +14,8 @@ import java.io.File
 object ImageOverlayStore {
     private const val MAX_IMAGE_BYTES = 30L * 1024 * 1024
     private const val MAX_TOTAL_BYTES = 120L * 1024 * 1024
+    // Never let 30 saved OCR scans consume gigabytes of phone storage.
+    private const val GLOBAL_IMAGE_BUDGET = 300L * 1024 * 1024
     private const val MAX_WORDS = 20_000
     private fun folder(c: Context, id: Long) = File(c.filesDir, "ocr_images/$id")
 
@@ -75,6 +77,7 @@ object ImageOverlayStore {
             dst.delete()
             tmp.renameTo(dst)
         }
+        trimOldImages(context, id)
     }
 
     /**
@@ -126,6 +129,21 @@ object ImageOverlayStore {
 
     fun remove(context: Context, id: Long) {
         folder(context, id).deleteRecursively()
+    }
+
+    private fun trimOldImages(context: Context, justSaved: Long) {
+        val root = File(context.filesDir, "ocr_images")
+        val folders = root.listFiles()?.filter { it.isDirectory } ?: return
+        fun bytes(folder: File) = folder.listFiles()?.sumOf { it.length() } ?: 0L
+        var total = folders.sumOf { bytes(it) }
+        if (total <= GLOBAL_IMAGE_BUDGET) return
+        // Old results remain available as text; only old stored images are evicted.
+        for (old in folders.sortedBy { it.lastModified() }) {
+            if (total <= GLOBAL_IMAGE_BUDGET) break
+            if (old.name.toLongOrNull() == justSaved) continue
+            val size = bytes(old)
+            if (old.deleteRecursively()) total -= size
+        }
     }
 
     fun prune(context: Context, keepIds: Set<Long>) {
