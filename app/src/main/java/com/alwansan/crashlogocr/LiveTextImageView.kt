@@ -3,6 +3,9 @@ package com.alwansan.crashlogocr
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.os.Handler
+import android.os.Looper
+import java.util.concurrent.Executors
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.VelocityTracker
@@ -45,6 +48,13 @@ class LiveTextImageView @JvmOverloads constructor(
     private val bitmapPaint = Paint(Paint.FILTER_BITMAP_FLAG)
 
     private var reader: BitmapRegionDecoder? = null
+    // Region decoding on the UI thread caused stutter every time the image moved
+    // beyond its cached tile. Decode regions off-main, then swap the bitmap on main.
+    private val readerLock = Any()
+    private val imageExecutor = Executors.newSingleThreadExecutor()
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private var decodeRunning = false
+    private var decodeEpoch = 0L
     private var cache: Bitmap? = null
     private val cacheRect = Rect()
     private var cacheSample = 0
@@ -103,8 +113,10 @@ class LiveTextImageView @JvmOverloads constructor(
 
     fun setImage(file: File, detected: List<OcrWord>) {
         releaseImage()
-        reader = BitmapRegionDecoder.newInstance(file.absolutePath, false)
-            ?: error("Unable to open screenshot")
+        synchronized(readerLock) {
+            reader = BitmapRegionDecoder.newInstance(file.absolutePath, false)
+                ?: error("Unable to open screenshot")
+        }
         iw = reader!!.width; ih = reader!!.height
         words = detected.filter { it.valid }
         selected.clear()
@@ -351,18 +363,7 @@ class LiveTextImageView @JvmOverloads constructor(
                     min(iw, r + padX), min(ih, b + padY))
                 while (needed.width().toLong() * needed.height() / (sample.toLong() * sample) > 3_000_000L)
                     sample *= 2
-                val decoded = runCatching {
-                    decoder.decodeRegion(needed, BitmapFactory.Options().apply {
-                        inSampleSize = sample
-                        inPreferredConfig = Bitmap.Config.RGB_565
-                    })
-                }.getOrNull()
-                if (decoded != null) {
-                    cache?.recycle()
-                    cache = decoded
-                    cacheRect.set(needed)
-                    cacheSample = sample
-                }
+                requestDecode(needed, sample)
             }
             cache?.let {
                 canvas.drawBitmap(it, null, RectF(
@@ -407,12 +408,44 @@ class LiveTextImageView @JvmOverloads constructor(
                 5 * dp, 5 * dp, scrollThumb)
         }
     }
+    private fun requestDecode(rect: Rect, sample: Int) {
+        if (decodeRunning) return
+        decodeRunning = true
+        val generation = decodeEpoch
+        val region = Rect(rect)
+        imageExecutor.execute {
+            val decoded = runCatching {
+                synchronized(readerLock) {
+                    reader?.decodeRegion(region, BitmapFactory.Options().apply {
+                        inSampleSize = sample
+                        inPreferredConfig = Bitmap.Config.RGB_565
+                    })
+                }
+            }.getOrNull()
+            mainHandler.post {
+                decodeRunning = false
+                if (generation != decodeEpoch || reader == null) {
+                    decoded?.recycle()
+                } else {
+                    if (decoded != null) {
+                        cache?.recycle()
+                        cache = decoded
+                        cacheRect.set(region)
+                        cacheSample = sample
+                    }
+                    postInvalidateOnAnimation()
+                }
+            }
+        }
+    }
+
     fun releaseImage() {
+        decodeEpoch++
         removeCallbacks(longPress)
         scroller.forceFinished(true)
         tracker?.recycle(); tracker = null
         cache?.recycle(); cache = null; cacheSample = 0
-        reader?.recycle(); reader = null
+        synchronized(readerLock) { reader?.recycle(); reader = null }
     }
-    override fun onDetachedFromWindow() { releaseImage(); super.onDetachedFromWindow() }
+    override fun onDetachedFromWindow() { releaseImage(); imageExecutor.shutdownNow(); super.onDetachedFromWindow() }
 }
