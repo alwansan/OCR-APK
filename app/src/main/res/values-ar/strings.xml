@@ -89,4 +89,9 @@
     <string name="next_page">التالية</string>
     <string name="no_saved_image">ماكو صورة محفوظة لهذه النتيجة. جرب تستخرجها من الصورة مرة ثانية.</string>
     <string name="image_no_word_boxes">الصورة موجودة لكن لم تُكتشف مواقع كلمات OCR فيها.</string>
+    <string name="ui_language">لغة التطبيق</string>
+    <string name="ui_language_auto">حسب لغة الهاتف تلقائياً</string>
+    <string name="ui_language_ar">العربية</string>
+    <string name="ui_language_en">English</string>
+    <string name="ui_language_desc">هذا الخيار يغير لغة الواجهة فقط. وتگدر تختار لغات التعرف على النصوص بشكل مستقل.</string>
 </resources>
