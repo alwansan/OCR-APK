@@ -26,6 +26,8 @@ class EngineLabActivity : AppCompatActivity() {
     private lateinit var firstCopy: MaterialButton
     private lateinit var secondCopy: MaterialButton
     private var busy = false
+    private var firstRaw = ""
+    private var secondRaw = ""
 
     private val sourcePicker = registerForActivityResult(
         ActivityResultContracts.GetContent()
@@ -35,6 +37,8 @@ class EngineLabActivity : AppCompatActivity() {
             pick.isEnabled = false
             status.setText(R.string.engine_lab_working)
             agreement.text = ""
+            firstRaw = ""
+            secondRaw = ""
             firstText.text = ""
             secondText.text = ""
             OcrEngine.compareEngines(this, uri) { results ->
@@ -46,10 +50,12 @@ class EngineLabActivity : AppCompatActivity() {
                 val second = results.getOrNull(1)
                 firstName.text = formatName(first)
                 secondName.text = formatName(second)
-                firstText.text = first?.output?.rawText
-                    ?: first?.error ?: getString(R.string.engine_lab_empty)
-                secondText.text = second?.output?.rawText
-                    ?: second?.error ?: getString(R.string.engine_lab_empty)
+                firstRaw = first?.output?.rawText.orEmpty()
+                secondRaw = second?.output?.rawText.orEmpty()
+                firstText.text = if (first?.output != null) preview(firstRaw)
+                    else first?.error ?: getString(R.string.engine_lab_empty)
+                secondText.text = if (second?.output != null) preview(secondRaw)
+                    else second?.error ?: getString(R.string.engine_lab_empty)
                 firstCopy.isEnabled = first?.output != null
                 secondCopy.isEnabled = second?.output != null
                 if (first?.output != null && second?.output != null) {
@@ -63,6 +69,9 @@ class EngineLabActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun preview(text: String): String = if (text.length <= 45_000) text
+        else text.take(45_000) + getString(R.string.engine_lab_preview_trimmed)
 
     private fun formatName(value: OcrEngine.EngineSample?): String =
         value?.let { "${it.name} · ${it.durationMs} ms" }
@@ -86,9 +95,9 @@ class EngineLabActivity : AppCompatActivity() {
         firstText.setTextIsSelectable(true)
         secondText.setTextIsSelectable(true)
         pick.setOnClickListener { if (!busy) sourcePicker.launch("image/*") }
-        firstCopy.setOnClickListener { ClipboardUtils.copy(this, firstText.text.toString())
+        firstCopy.setOnClickListener { ClipboardUtils.copy(this, firstRaw)
             Toast.makeText(this, R.string.copied, Toast.LENGTH_SHORT).show() }
-        secondCopy.setOnClickListener { ClipboardUtils.copy(this, secondText.text.toString())
+        secondCopy.setOnClickListener { ClipboardUtils.copy(this, secondRaw)
             Toast.makeText(this, R.string.copied, Toast.LENGTH_SHORT).show() }
     }
 }
