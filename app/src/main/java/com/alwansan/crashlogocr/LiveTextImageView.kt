@@ -55,6 +55,8 @@ class LiveTextImageView @JvmOverloads constructor(
     private val mainHandler = Handler(Looper.getMainLooper())
     private var decodeRunning = false
     private var decodeEpoch = 0L
+    private val failedRegion = Rect()
+    private var failedSample = 0
     private var cache: Bitmap? = null
     private val cacheRect = Rect()
     private var cacheSample = 0
@@ -410,6 +412,7 @@ class LiveTextImageView @JvmOverloads constructor(
     }
     private fun requestDecode(rect: Rect, sample: Int) {
         if (decodeRunning) return
+        if (failedSample == sample && failedRegion == rect) return
         decodeRunning = true
         val generation = decodeEpoch
         val region = Rect(rect)
@@ -427,7 +430,12 @@ class LiveTextImageView @JvmOverloads constructor(
                 if (generation != decodeEpoch || reader == null) {
                     decoded?.recycle()
                 } else {
-                    if (decoded != null) {
+                    if (decoded == null) {
+                        failedRegion.set(region)
+                        failedSample = sample
+                    } else {
+                        failedRegion.setEmpty()
+                        failedSample = 0
                         cache?.recycle()
                         cache = decoded
                         cacheRect.set(region)
@@ -441,6 +449,8 @@ class LiveTextImageView @JvmOverloads constructor(
 
     fun releaseImage() {
         decodeEpoch++
+        failedRegion.setEmpty()
+        failedSample = 0
         removeCallbacks(longPress)
         scroller.forceFinished(true)
         tracker?.recycle(); tracker = null
