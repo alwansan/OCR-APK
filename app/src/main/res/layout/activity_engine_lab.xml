@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:fitsSystemWindows="true" android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/labToolbar"
+        android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+        app:title="@string/engine_lab_title"
+        app:navigationIcon="@android:drawable/ic_media_previous" />
+
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp"
+        android:layout_weight="1" android:fillViewport="true">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:padding="16dp">
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="@string/engine_lab_help" android:textSize="14sp"
+                android:paddingBottom="12dp"/>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/labPick"
+                android:layout_width="match_parent" android:layout_height="56dp"
+                android:text="@string/engine_lab_pick"/>
+            <TextView android:id="@+id/labStatus" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:paddingVertical="12dp"
+                android:text="@string/engine_lab_idle"/>
+            <TextView android:id="@+id/labAgreement"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textColor="?attr/colorPrimary" android:textStyle="bold"
+                android:paddingBottom="16dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/labCopyDiff"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="@string/engine_lab_copy_diff" />
+            <TextView android:id="@+id/labDiffs"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:fontFamily="monospace" android:textSize="12sp"
+                android:textDirection="firstStrong"
+                android:paddingBottom="12dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp" app:cardCornerRadius="16dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="16dp">
+                    <TextView android:id="@+id/labFirstName" android:layout_width="match_parent"
+                        android:layout_height="wrap_content" android:text="ML Kit Latin"
+                        android:textStyle="bold" android:textSize="16sp"/>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/labCopyFirst" style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="@string/engine_lab_copy"/>
+                    <TextView android:id="@+id/labFirstText"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:fontFamily="monospace" android:textSize="13sp"
+                        android:textDirection="firstStrong"
+                        android:breakStrategy="simple"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="16dp">
+                    <TextView android:id="@+id/labSecondName" android:layout_width="match_parent"
+                        android:layout_height="wrap_content" android:text="Tesseract"
+                        android:textStyle="bold" android:textSize="16sp"/>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/labCopySecond" style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="@string/engine_lab_copy"/>
+                    <TextView android:id="@+id/labSecondText"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:fontFamily="monospace" android:textSize="13sp"
+                        android:textDirection="firstStrong"
+                        android:breakStrategy="simple"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

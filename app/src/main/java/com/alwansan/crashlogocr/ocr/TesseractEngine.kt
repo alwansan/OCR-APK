@@ -39,7 +39,6 @@ internal object TesseractEngine {
     }
 
     fun recognize(context: Context, uris: List<Uri>, language: OcrLanguage): OcrOutput {
-        require(language != OcrLanguage.ENGLISH)
         TessModels.ensureBundled(context, language.requiredPacks())
         val tess = TessBaseAPI()
         if (!tess.init(context.filesDir.absolutePath, language.tessCode)) {

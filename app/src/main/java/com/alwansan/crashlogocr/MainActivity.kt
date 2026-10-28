@@ -126,6 +126,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.menuSettings -> { showSettings(); true }
         R.id.menuUpdate -> { checkUpdates(); true }
+        R.id.menuEngineLab -> { startActivity(Intent(this, EngineLabActivity::class.java)); true }
         R.id.menuLanguage -> { showLanguageSettings(); true }
         R.id.menuAccuracy -> { showAccuracySettings(); true }
         R.id.menuUiLanguage -> { showUiLanguages(); true }

@@ -31,6 +31,7 @@
             <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
         </activity>
 
+        <activity android:name=".EngineLabActivity" android:exported="false" android:windowSoftInputMode="stateAlwaysHidden|adjustResize"/>
         <activity android:name=".GalleryActivity" android:exported="false"/>
         <activity android:name=".ImageTextActivity" android:exported="false" android:windowSoftInputMode="stateAlwaysHidden|adjustNothing"/>
         <activity android:name=".ResultActivity" android:exported="false"

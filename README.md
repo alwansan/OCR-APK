@@ -133,3 +133,27 @@ testing. The tested ML Kit/Tesseract path remains the working default.
 تحسّن مربع **الأسطر كاملة** فقط، ولا تخمّن الحروف المفقودة من النص.
 كذلك بحثنا مشروع MakeACopy الذي يستخدم PaddleOCR على أندرويد فعلياً
 ووضعنا خطة لدمج المحرك بعد قياس الدقة والسرعة.
+
+## v3 alpha — OCR Engine Lab (experimental branch)
+
+A new **OCR Engine Lab / مختبر محركات OCR** is available from the home
+menu to A/B test one original image with independent ML Kit Latin and
+Tesseract Arabic/English/bilingual, offline. Review raw results, elapsed
+times, exact shared lines and unique lines; copy the full output from
+either engine. This is *not* an OCR accuracy percentage — ground-truth
+transcripts are necessary for that.
+
+This **does not yet ship PaddleOCR**. The official PaddleOCR v6 Android
+sample has a minSdk 26 requirement while CrashLogOCR currently targets
+Android 6+ (minSdk 23). The next prototype will isolate the new native
+runtime/model packs and benchmark on real images before switching engines.
+
+[Engine Lab QA and Android SDK compatibility](docs/QA_ENGINE_LAB_V3.md)
+
+### العربية
+
+أضفنا مختبر محركات OCR إلى القائمة الرئيسية؛ تختار الصورة الأصلية
+ويطلع نص ML Kit ونص Tesseract كل واحد مستقل مع زمن المعالجة والاختلاف
+بين الأسطر. تگدر تنسخ النص الكامل حتى إذا المعاينة مختصرة.
+PaddleOCR بعده مو مدموج؛ راح نختبر توافقه ويا إصدارات أندرويد القديمة
+قبل ما نعتمده أو ننزّل نماذجه الكبيرة.
