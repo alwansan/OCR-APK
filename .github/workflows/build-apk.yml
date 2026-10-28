@@ -37,7 +37,7 @@ jobs:
       - name: Upload installable debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: CrashLogOCR-v2.2.0-debug
+          name: CrashLogOCR-v2.3.0-debug
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
