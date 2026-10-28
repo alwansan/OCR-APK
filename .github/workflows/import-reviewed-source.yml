@@ -29,7 +29,7 @@ jobs:
           for path, body in files.items():
               target = Path(path)
               assert target.parts and '..' not in target.parts and not target.is_absolute()
-              assert not any(p.startswith(".git") for p in target.parts if p != ".github")
+              assert not any(p.startswith(".git") for p in target.parts if p not in (".github", ".gitignore"))
               assert not any("keystore" in p.lower() for p in target.parts)
               assert not path.endswith(".jks")
               target.parent.mkdir(parents=True, exist_ok=True)
