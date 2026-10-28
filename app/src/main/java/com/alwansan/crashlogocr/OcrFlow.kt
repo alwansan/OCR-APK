@@ -6,11 +6,15 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.widget.Toast
 import com.alwansan.crashlogocr.ocr.OcrEngine
+import com.alwansan.crashlogocr.ocr.OcrLanguage
+import com.alwansan.crashlogocr.ocr.OcrLanguagePreferences
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 /** Shared "image(s) -> OCR -> clean -> history -> result screen" pipeline used by every entry point. */
 object OcrFlow {
+    private fun looksLikeCrash(text: String) = Regex("""(?:java\\.lang\\.|Exception|Error|Caused by:)""").containsMatchIn(text)
+
     fun run(activity: Activity, uris: List<Uri>, onFinished: () -> Unit = {}) {
         if (uris.isEmpty()) return
         val dialog: AlertDialog = MaterialAlertDialogBuilder(activity)
@@ -20,7 +24,9 @@ object OcrFlow {
         OcrEngine.recognize(activity, uris.take(12)) { result ->
             if (!activity.isFinishing) dialog.dismiss()
             result.onSuccess { out ->
-                val clean = TraceCleaner.clean(out.lines, out.imageWidth)
+                val language = OcrLanguagePreferences.get(activity)
+                val clean = if (language != OcrLanguage.ENGLISH && !looksLikeCrash(out.rawText))
+                    out.rawText else TraceCleaner.clean(out.lines, out.imageWidth)
                 if (out.rawText.isBlank()) {
                     Toast.makeText(activity, R.string.empty, Toast.LENGTH_LONG).show()
                 } else {
@@ -28,7 +34,7 @@ object OcrFlow {
                     activity.startActivity(
                         Intent(activity, ResultActivity::class.java).putExtra(ResultActivity.EXTRA_ID, item.id))
                 }
-            }.onFailure { Toast.makeText(activity, R.string.read_failed, Toast.LENGTH_LONG).show() }
+            }.onFailure { Toast.makeText(activity, it.localizedMessage ?: activity.getString(R.string.read_failed), Toast.LENGTH_LONG).show() }
             onFinished()
         }
     }
