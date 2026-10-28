@@ -72,7 +72,7 @@ object TraceCleaner {
     }
 
     private fun isNewEntry(line: String): Boolean {
-        if (line == "at") return false
+        if (line == "at") return true
         return start.containsMatchIn(line) ||
             frame.containsMatchIn(line) ||
             line.startsWith("at ") ||
