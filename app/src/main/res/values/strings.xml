@@ -114,4 +114,5 @@ Pull down to refresh.</string>
     <string name="ocr_accuracy_fast">Fast — ML Kit only</string>
     <string name="ocr_accuracy_balanced">Balanced — check suspect code lines (default)</string>
     <string name="ocr_accuracy_high">High accuracy — check more lines (slower)</string>
+    <string name="selected_line_count">%1$d lines selected</string>
 </resources>
