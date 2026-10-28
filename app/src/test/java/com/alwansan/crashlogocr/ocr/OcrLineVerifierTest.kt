@@ -19,6 +19,12 @@ class OcrLineVerifierTest {
             "java.lang.RuntimeException: unable to start activity",
             "X" + "java.lang.RuntimeException: unable to start activity" + "x".repeat(300)))
     }
+    @Test fun verifiedLineBoxIncludesRestoredPrefix() {
+        val left = OcrLineVerifier.correctedLeft("id.app.ActivityThread",
+            "android.app.ActivityThread", 180, 420, 1080)
+        assertTrue(left < 180)
+        assertTrue(left >= 0)
+    }
     @Test fun prioritizesLikelyBadFrame() {
         val frame = OcrPassFusion.Line("id.app.ActivityThread.handleLaunchActivity",
             0,0,400,30,emptyList(), 0.50f)
