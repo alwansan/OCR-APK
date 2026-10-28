@@ -33,7 +33,7 @@ jobs:
           test -x "$SDKMANAGER"
           "$SDKMANAGER" --install "platforms;android-35" "build-tools;35.0.0"
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           gradle-version: '8.11.1'
       - name: Verify offline OCR benchmark metrics
