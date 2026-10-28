@@ -40,3 +40,26 @@ The attached Claude v2 prototype contained a JKS signing key plus passwords in s
 **التحديثات:** زر فحص التحديثات يبحث عن إصدار تطبيق جديد على GitHub Releases فقط. مكتبة OCR المدمجة تتحدث عبر Dependabot وإصدار APK جديد، ولا يتم تحميل كود تنفيذي تلقائياً من الإنترنت.
 
 **الخصوصية:** OCR محلي؛ فقط فحص التحديثات يستخدم الإنترنت عند الطلب. السجلات محفوظة على الجهاز ويُفضل حذفها بعد الانتهاء. ملف التوقيع الأصلي الذي وصل داخل ZIP غير مدرج في المستودع لأسباب أمنية.
+
+## CrashLogOCR v2.2 — result usability and bilingual OCR
+
+- The result screen now scrolls vertically, including when the keyboard is visible. Wrapped code lines are the default for new installs.
+- An eye control switches between **Edit** and **Read only**. Read-only text is selectable/copyable but cannot be changed and does not show the keyboard. The setting persists on the phone.
+- The home screen menu includes **OCR languages & models**: English (bundled ML Kit), Arabic (Tesseract), and Arabic + English (Tesseract).
+- The app embeds official `tessdata_fast` Arabic (`ara`) and English (`eng`) models during Gradle builds. First recognition works offline.
+- You can explicitly refresh the Arabic or English language model from Settings. Refresh downloads a traineddata file from the official repository over HTTPS, checks size and validates it with Tesseract before replacing the old file.
+- No screenshot or OCR result is uploaded. Updating native OCR libraries still requires a new APK.
+
+### Reproducible PUBLIC test signing — important security limitation
+
+The project now contains `app/signing/community-debug.jks.base64`, a shared public **test-only** private key. Gradle decodes it and uses the same certificate for all debug builds. Alias: `crashlogocr`; public test password: `ocr-open-debug`.
+
+**Security warning:** Everybody can sign a modified or malicious APK using this published private key. Android will not distinguish that APK from an authentic update based on its signature alone. It is therefore NOT appropriate for trusted release signing; obtain APKs only from the repository's verified CI and consider setting up private signing for a production channel. Switching from earlier Android-generated debug keys requires one uninstall/reinstall because the old signatures differ.
+
+### العربية
+
+تم إصلاح تمرير صفحة النتيجة حتى عند ظهور الكيبورد، وإضافة زر العين للتبديل بين التحرير والقراءة فقط. بوضع القراءة تگدر تحدد النص وتنسخه بدون كيبورد، وينحفظ آخر اختيار تلقائياً.
+
+للتعرف على العربية، افتح القائمة الرئيسية ← **لغات OCR والنماذج** واختر العربية أو العربية والإنجليزية. العربية تعتمد Tesseract ونموذجه `ara`، والإنجليزية البرمجية تستمر على ML Kit. ملفات اللغة موجودة مع التطبيق للعمل دون إنترنت، ويمكن تحديثها يدوياً من الإعدادات.
+
+**تنبيه:** مفتاح Debug المشترك منشور علناً حسب طلب صاحب المشروع. هذا مفيد لاستمرارية توقيع نسخ التجربة، لكنه لا يوفر حماية التحديثات ضد APK مزور بتوقيع نفس المفتاح.
