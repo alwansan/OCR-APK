@@ -29,6 +29,17 @@
                 android:textColor="?attr/colorPrimary" android:textStyle="bold"
                 android:paddingBottom="16dp"/>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/labCopyDiff"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="@string/engine_lab_copy_diff" />
+            <TextView android:id="@+id/labDiffs"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:fontFamily="monospace" android:textSize="12sp"
+                android:textDirection="firstStrong"
+                android:paddingBottom="12dp"/>
+
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp" app:cardCornerRadius="16dp">
