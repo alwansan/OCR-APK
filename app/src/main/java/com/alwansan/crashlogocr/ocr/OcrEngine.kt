@@ -62,7 +62,7 @@ object OcrEngine {
                     android.os.SystemClock.elapsedRealtime() - start,
                     attempt.exceptionOrNull()?.localizedMessage))
             }
-            sample("ML Kit Latin") { recognizeLatin(app, listOf(uri)) }
+            sample("ML Kit Latin") { recognizeLatin(app, listOf(uri), pureMlKit = true) }
             // Use a *genuinely separate* OCR implementation. On English-only
             // setting this is English Tesseract, not a duplicate ML Kit pass.
             val tessLang = when (OcrLanguagePreferences.get(app)) {
@@ -89,7 +89,7 @@ object OcrEngine {
         return latin
     }
 
-    private fun recognizeLatin(context: Context, uris: List<Uri>): OcrOutput {
+    private fun recognizeLatin(context: Context, uris: List<Uri>, pureMlKit: Boolean = false): OcrOutput {
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
         val lineChecker = OcrTessLineCheck(context)
         val accuracy = OcrAccuracyPreference.get(context)
@@ -125,7 +125,7 @@ object OcrEngine {
                     // A different OCR engine is only consulted for a capped number
                     // of suspicious Java frames. It cannot silently rewrite every line.
                     val verified = lineChecker.refine(
-                        tile.bitmap, merged, dark, accuracy.maxVerifyPerTile
+                        tile.bitmap, merged, dark, if (pureMlKit) 0 else accuracy.maxVerifyPerTile
                     )
 
                     for (line in verified) {
