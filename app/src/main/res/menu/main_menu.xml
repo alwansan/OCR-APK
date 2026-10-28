@@ -2,6 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/menuUpdate" android:title="@string/check_updates"/>
     <item android:id="@+id/menuUiLanguage" android:title="@string/ui_language"/>
+    <item android:id="@+id/menuAccuracy" android:title="@string/ocr_accuracy_menu"/>
     <item android:id="@+id/menuLanguage" android:title="@string/ocr_language_settings"/>
     <item android:id="@+id/menuSettings" android:title="@string/settings"/>
 </menu>
