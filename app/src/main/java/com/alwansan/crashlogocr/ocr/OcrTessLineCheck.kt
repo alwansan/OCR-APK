@@ -66,7 +66,9 @@ internal class OcrTessLineCheck(private val context: Context) : AutoCloseable {
             val source = candidates[index]
             val text = runCatching { readLine(tess, bitmap, source, darkBackground) }.getOrNull()
             if (!text.isNullOrBlank() && OcrLineVerifier.useAlternative(source.text, text)) {
-                output[index] = source.copy(text = text)
+                output[index] = source.copy(text = text,
+                    left = OcrLineVerifier.correctedLeft(source.text, text,
+                        source.left, source.right, bitmap.width))
             }
         }
         return output
