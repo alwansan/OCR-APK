@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
+import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
@@ -25,7 +26,11 @@ import kotlin.math.min
  * blank background pans. No EditText/IME exists in this view.
  */
 @Suppress("DEPRECATION")
-class LiveTextImageView(context: Context) : View(context) {
+class LiveTextImageView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
     private val marker = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(106, 165, 255) }
     private val outline = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.rgb(78, 144, 255)
