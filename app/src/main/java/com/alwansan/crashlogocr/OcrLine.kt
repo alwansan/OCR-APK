@@ -6,7 +6,8 @@ package com.alwansan.crashlogocr
 data class OcrWord(
     val text: String,
     val left: Float, val top: Float, val right: Float, val bottom: Float,
-    val imageIndex: Int = 0
+    val imageIndex: Int = 0,
+    val confidence: Int? = null
 ) {
     val valid get() = text.isNotBlank() && left >= 0f && top >= 0f &&
         right > left && bottom > top && right <= 1.01f && bottom <= 1.01f
