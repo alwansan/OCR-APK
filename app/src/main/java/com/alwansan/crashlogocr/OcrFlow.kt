@@ -13,7 +13,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 /** Shared "image(s) -> OCR -> clean -> history -> result screen" pipeline used by every entry point. */
 object OcrFlow {
-    private fun looksLikeCrash(text: String) = Regex("""(?:java\\.lang\\.|Exception|Error|Caused by:)""").containsMatchIn(text)
+    private fun looksLikeCrash(text: String) = Regex("""(?:java\.lang\.|Exception|Error|Caused by:)""").containsMatchIn(text)
 
     fun run(activity: Activity, uris: List<Uri>, onFinished: () -> Unit = {}) {
         if (uris.isEmpty()) return
