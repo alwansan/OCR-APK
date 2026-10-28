@@ -107,4 +107,7 @@
     <string name="gesture_pan_description">تحريك الصورة والتمرير بحرية</string>
     <string name="gesture_select_description">اسحب من كلمة إلى أخرى لتحديد النص</string>
     <string name="gesture_help">اسحب للتحريك • اضغط على الكلمة • اضغط مطولاً للتحديد • شريط سريع باليمين</string>
+    <string name="word_selection_mode">الكلمات</string>
+    <string name="line_selection_mode">الأسطر كاملة</string>
+    <string name="line_selection_help">حدد السطر كاملاً إذا كانت بعض مربعات الكلمات ناقصة</string>
 </resources>
