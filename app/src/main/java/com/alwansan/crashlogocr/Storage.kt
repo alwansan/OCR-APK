@@ -10,7 +10,17 @@ object Prefs {
     private fun p(c: Context) = c.getSharedPreferences("settings", Context.MODE_PRIVATE)
     fun quickCopy(c: Context) = p(c).getBoolean("quick_copy", true)
     fun setQuickCopy(c: Context, v: Boolean) = p(c).edit().putBoolean("quick_copy", v).apply()
-    fun wrapLines(c: Context) = p(c).getBoolean("wrap", true)
+    fun wrapLines(c: Context): Boolean {
+        val preferences = p(c)
+        // One-time UX migration: v2.1 defaulted to clipped horizontal code.
+        // After this migration, the user's wrap choice is respected and retained.
+        if (!preferences.getBoolean("wrap_v22_migrated", false)) {
+            preferences.edit().putBoolean("wrap", true)
+                .putBoolean("wrap_v22_migrated", true).apply()
+            return true
+        }
+        return preferences.getBoolean("wrap", true)
+    }
     fun setWrapLines(c: Context, v: Boolean) = p(c).edit().putBoolean("wrap", v).apply()
     fun editEnabled(c: Context) = p(c).getBoolean("edit_enabled", true)
     fun setEditEnabled(c: Context, v: Boolean) = p(c).edit().putBoolean("edit_enabled", v).apply()
