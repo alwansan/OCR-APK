@@ -125,4 +125,5 @@ Pull down to refresh.</string>
     <string name="engine_lab_partial">One engine could not read the image. See results below.</string>
     <string name="engine_lab_empty">No recognized text</string>
     <string name="engine_lab_copy">Copy result</string>
+    <string name="engine_lab_preview_trimmed">\n…Preview shortened for performance. Copy result gets the complete text.</string>
 </resources>
