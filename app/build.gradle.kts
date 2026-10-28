@@ -54,12 +54,12 @@ dependencies {
 val trainedData = layout.projectDirectory.dir("src/main/assets/tessdata")
 val prepareOcrModels = tasks.register("prepareOcrModels") {
     val codes = listOf("ara", "eng")
-    outputs.files(codes.map { trainedData.file("$"+"{it}.traineddata") })
+    outputs.files(codes.map { trainedData.file("${it}.traineddata") })
     doLast {
         val dir = trainedData.asFile
         check(dir.isDirectory || dir.mkdirs())
         for (code in codes) {
-            val destination = java.io.File(dir, "$"+"{code}.traineddata")
+            val destination = java.io.File(dir, "${code}.traineddata")
             if (destination.length() >= 100_000L) continue
             val staging = java.io.File(dir, "$"+"{code}.part")
             val url = java.net.URL("https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/$"+"{code}.traineddata")
@@ -73,8 +73,8 @@ val prepareOcrModels = tasks.register("prepareOcrModels") {
                         input.copyTo(output)
                     }
                 }
-                check(staging.length() in 100_000L..35_000_000L) { "Invalid $"+"code model" }
-                check(staging.renameTo(destination)) { "Cannot install model $"+"code" }
+                check(staging.length() in 100_000L..35_000_000L) { "Invalid $code model" }
+                check(staging.renameTo(destination)) { "Cannot install model $code" }
             } finally {
                 staging.delete()
             }
